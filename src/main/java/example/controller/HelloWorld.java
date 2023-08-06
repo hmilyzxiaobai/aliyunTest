@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class HelloWorld {
     @RequestMapping("yeap")
     public String yeap(){
-        return "成功打通网络";
+        return "成功打通网络ss";
     }
 
 
