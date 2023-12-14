@@ -11,6 +11,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.context.request.WebRequest;
 
 import javax.servlet.http.HttpServletRequest;
+import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -22,8 +23,6 @@ public class HelloWorld {
     @RequestMapping("yeap")
     public String yeap(){
     log.info("请求访问");
-        //获取访问的http端口信息等
-      //  获取访问的http端口信息等
         //获取访问的http端口信息等
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         String url = request.getRequestURL().toString();
@@ -37,6 +36,9 @@ public class HelloWorld {
         return "欢迎访问";
     }
 
+    public void openWindow(){
+
+    }
 
 
 }

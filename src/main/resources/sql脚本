@@ -1,0 +1,11 @@
+CREATE TABLE `log_dongfang` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `url` varchar(255) NOT NULL DEFAULT '' COMMENT 'sor唯一主键',
+  `title` varchar(255) NOT NULL DEFAULT '' COMMENT '推送状态',
+  `content` varchar(255) NOT NULL DEFAULT '' COMMENT '推送系统--鸣凰 srm--xbom',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB   DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='东方财富第一个表';
+
+
