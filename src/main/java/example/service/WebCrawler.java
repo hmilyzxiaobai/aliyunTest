@@ -17,12 +17,12 @@ public class WebCrawler {
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         String url = "https://www.eastmoney.com/"; // 替换成你要爬取的网页地址
-        Class.forName("com.mysql.jdbc.Driver");
+        Class.forName("com.mysql.cj.jdbc.Driver");
         String sql = "INSERT INTO log_dongfang (url,title,content) VALUES ";
-           String databaseUrl  = "jdbc:mysql://localhost:3306/public_work";
+        String databaseUrl  = "jdbc:mysql://localhost:3306/test_work?autoReconnect=true&useSSL=false";
         //"jdbc:mysql://localhost:3306/public_work"; // 替换成你的数据库信息
-          String username = "root"; // 替换成你的数据库用户名
-          String password = "123456"; // 替换成你的数据库密码
+        String username = "root"; // 替换成你的数据库用户名
+        String password = "123456"; // 替换成你的数据库密码
 
         Connection conn = DriverManager.getConnection(databaseUrl, username, password);
 
@@ -43,9 +43,10 @@ public class WebCrawler {
                 if (isValidURL(linkHref)) {
                     values.add(readAll(linkHref));
                 }
-                if (values.size()>30){
-                    sql= sql+ StrUtil.join(",",values);
-                    insertData(sql,conn);
+                if (values.size()>9){
+                    String executSql= sql+ StrUtil.join(",",values);
+                    System.out.println(executSql);
+                    insertData(executSql,conn);
                     values=new ArrayList<String>();
                 }
             }
@@ -116,10 +117,10 @@ public class WebCrawler {
     private static void insertData(String sql,Connection conn){
         try  {
             // 要执行的 SQL 语句
-             // 替换成你的表格和列名
+            // 替换成你的表格和列名
             // 创建 PreparedStatement 对象
             PreparedStatement pstmt = conn.prepareStatement(sql);
-             // 设置第一个参数的值为要插入的数据
+            // 设置第一个参数的值为要插入的数据
             // 执行 SQL 语句
             pstmt.executeUpdate();
             System.out.println("Data inserted successfully!");
