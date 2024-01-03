@@ -22,7 +22,7 @@ public class ChatSend {
 
     public static void main(String []args) throws IOException {
         WenToken wenToken= new WenToken();
-        TokenVo token = wenToken.getToken();
+        String token = wenToken.getToken();
         ChatWenDto chatWenDto = init();
         String userId = UUID.randomUUID().toString();
         chatWenDto.setUser_id(userId);
@@ -40,7 +40,7 @@ public class ChatSend {
             MediaType mediaType = MediaType.parse("application/json");
             RequestBody body = RequestBody.create(mediaType, s);
             Request request = new Request.Builder()
-                    .url("https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions_pro?access_token=" + token.getAccess_token())
+                    .url("https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions_pro?access_token=" + token)
                     .method("POST", body)
                     .addHeader("Content-Type", "application/json")
                     .build();
