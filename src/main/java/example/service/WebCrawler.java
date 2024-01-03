@@ -19,7 +19,7 @@ public class WebCrawler {
         String url = "https://www.eastmoney.com/"; // 替换成你要爬取的网页地址
         Class.forName("com.mysql.cj.jdbc.Driver");
         String sql = "INSERT INTO log_dongfang (url,title,content) VALUES ";
-        String databaseUrl  = "jdbc:mysql://localhost:3306/test_work?autoReconnect=true&useSSL=false";
+        String databaseUrl  = "jdbc:mysql://localhost:3306/public_work?autoReconnect=true&useSSL=false";
         //"jdbc:mysql://localhost:3306/public_work"; // 替换成你的数据库信息
         String username = "root"; // 替换成你的数据库用户名
         String password = "123456"; // 替换成你的数据库密码

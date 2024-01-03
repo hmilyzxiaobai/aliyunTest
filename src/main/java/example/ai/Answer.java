@@ -13,4 +13,5 @@ public class Answer {
     private int created;
     private List<Choices> choices;
     private Usage usage;
+    private String system_fingerprint;
 }

@@ -9,5 +9,11 @@ public class Choices {
     private Integer index;
     private String logprobs;
     private String finish_reason;
+    private Message message;
+    @Data
+    public static class Message{
+        private String role;
+        private String content;
+    }
 }
 
