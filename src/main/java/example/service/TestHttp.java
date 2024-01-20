@@ -22,7 +22,7 @@ public class TestHttp {
     static final String chatModle = "text-davinci-002-render-sha";
 
     public static void main(String[] args) throws IOException {
-        String openAiKey = "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";
+        String openAiKey = "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";
 
         // 创建 URL 对象
             URL url = new URL("https://api.openai.com/v1/chat/completions"); // 替换成你的目标 URL
@@ -74,7 +74,7 @@ public class TestHttp {
     }
     private static SendObject init(String message,String parentId){
         SendObject sendObject = new SendObject();
-        sendObject.setModel(chatModle);
+        sendObject.setModel(gpt3);
         sendObject.setTemperature(0.7f);
         List<SendObject.MessageObject> messages = new ArrayList<SendObject.MessageObject>();
         SendObject.MessageObject messageObject= new SendObject.MessageObject();

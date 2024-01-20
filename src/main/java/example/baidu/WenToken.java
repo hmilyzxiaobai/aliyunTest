@@ -20,7 +20,7 @@ public class WenToken {
             .concurrencyLevel(Runtime.getRuntime().availableProcessors())
             .initialCapacity(100)
             .maximumSize(5000)
-            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .expireAfterWrite(1, TimeUnit.MINUTES)
             .build();
     private static final String TOKEN="token";
 

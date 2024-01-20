@@ -14,9 +14,9 @@ public class UserChatLogManager {
 
     @Autowired
     private UserChatLogMapper userChatLogMapper;
-    public List<UserChatLog> getByUser(String username){
+    public List<UserChatLog> getByUser(String folderInfoId){
         List<UserChatLog> userChatLogs = userChatLogMapper.selectList(Wrappers.<UserChatLog>lambdaQuery()
-                .eq(UserChatLog::getUsername, username).orderByAsc(UserChatLog::getCreateTime).last("limit 30"));
+                .eq(UserChatLog::getFolderInfoId, folderInfoId).orderByAsc(UserChatLog::getCreateTime).last("limit 30"));
         return userChatLogs;
     }
 
@@ -31,9 +31,9 @@ public class UserChatLogManager {
         return sb.toString();
     }
 
-    public void insertData(String username, String question ,String answer){
+    public void insertData(String folderInfoId, String question ,String answer){
         UserChatLog userChatLog = new UserChatLog();
-        userChatLog.setUsername(username);
+        userChatLog.setFolderInfoId(folderInfoId);
         userChatLog.setQuestion(question);
         userChatLog.setRequest(answer);
         userChatLogMapper.insert(userChatLog);

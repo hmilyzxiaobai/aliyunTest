@@ -7,8 +7,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Data
-@TableName("user_chat_log")
-public class UserChatLog implements Serializable {
+@TableName("user_info")
+public class VersionInfo  implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
@@ -17,11 +17,13 @@ public class UserChatLog implements Serializable {
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    private String folderInfoId;
+    private String version;
 
+    private String remark;
 
-    private String question;
-    private String request;
+    private String url;
+
+    private Integer sort;
 
     /**
      * 修改时间

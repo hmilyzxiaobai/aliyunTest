@@ -36,7 +36,7 @@ public class OtherMethod {
 
         HttpPost post = new HttpPost("https://api.openai.com/v1/chat/completions");
         post.addHeader("Content-Type", "application/json");
-        post.addHeader("Authorization", "Bearer " + "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");
+        post.addHeader("Authorization", "Bearer " + "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");
         // 新增代码：将代理类放入配置中
         post.setConfig(requestConfig);
         String paramJson = "{\n" +

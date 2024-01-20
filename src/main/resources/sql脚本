@@ -9,3 +9,40 @@ CREATE TABLE `log_dongfang` (
 ) ENGINE=InnoDB   DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='东方财富第一个表';
 
 
+
+CREATE TABLE `user_info` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `username` varchar(255) NOT NULL DEFAULT '' COMMENT '用户名',
+  `password` varchar(255) NOT NULL DEFAULT '' COMMENT '密码',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='东方财富第一个表';
+
+CREATE TABLE `user_chat_log` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `username` varchar(255) NOT NULL DEFAULT '' COMMENT '用户名',
+  `password` varchar(255) NOT NULL DEFAULT '' COMMENT '密码',
+  `question` text  COMMENT '问题',
+  `request` text  COMMENT '回答',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='chatgpt的对话记录';
+
+
+
+CREATE TABLE `version_info` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `version` varchar(255) NOT NULL DEFAULT '' COMMENT '用户名',
+  `remark` text COMMENT '密码',
+  `url` varchar(255) NOT NULL DEFAULT '' COMMENT '密码',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  `sort` int NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='登录的版本提示';
+
+
+
+

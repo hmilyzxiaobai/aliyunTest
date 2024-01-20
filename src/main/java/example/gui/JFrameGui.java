@@ -17,7 +17,7 @@ import java.util.Objects;
 /**
  * 登录界面
  */
-@Service
+
 public class JFrameGui extends JFrame implements ActionListener {
     private JTextField usernameField;
     private JPasswordField passwordField;

@@ -4,6 +4,7 @@ package example.controller;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -20,7 +21,7 @@ import java.util.Date;
 @RequestMapping("hello")
 @Slf4j
 public class HelloWorld {
-    @RequestMapping("yeap")
+    @PostMapping("yeap")
     public String yeap(){
     log.info("请求访问");
         //获取访问的http端口信息等

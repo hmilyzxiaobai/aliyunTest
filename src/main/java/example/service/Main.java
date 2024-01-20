@@ -102,7 +102,7 @@ public class Main {
         return "{\"model\": \"gpt-3.5-turbo\", \"prompt\": \"" + question + "\", \"temperature\": 0, \"max_tokens\": 1024}";
     }
     private static HttpGet getPost(){
-        String openAiKey = "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";
+        String openAiKey = "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";
         //   prop.getProperty("SECRET_KEY");
         String connectTimeout = "60000";
         //prop.getProperty("connectTimeout");
