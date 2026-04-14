@@ -7,16 +7,18 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import javax.swing.*;
 
 @SpringBootApplication
 @MapperScan({"example.**.mapper"})
+@EnableScheduling
 
 public class AliyunApplication {
 
     public static void main(String[] args) {
-        new JFrameGui();
+      //  new JFrameGui();
 //        SwingUtilities.invokeLater(new Runnable() {
 //            @Override
 //            public void run() {

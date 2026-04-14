@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="example.dongfangcaifu.mapper.CompanyInfoMapper">
+	<select id="queryAllUpBuy" resultType="example.dongfangcaifu.src.entity.FinancialInfoDmEntity">
+
+		select * from financial_info_dm where earnings &gt; 0 and earnings &lt; 10 and company_code in (
+		select  company_code from company_info where appear_market = '深A' and create_time > #{dateNow}
+		);
+
+	</select>
+
+	<select id = "queryBySend" resultType="java.lang.String">
+
+		SELECT DISTINCT company_code from send_his where company_code in (
+		select company_code from company_info where appear_market = '沪A')
+		and df = #{df};
+	</select>
+
+	<select id="queryAfterTwo"	resultType="example.dongfangcaifu.src.entity.FinancialInfoDmEntity">
+
+		select * from financial_info_dm where id in (
+		select  Max(id) AS id from financial_info_dm where
+		earnings &gt; 0 and
+		earnings &lt; 10
+		and capital_now > 100000
+		and company_code not like '668%'
+		and company_code not like '688%'
+		and create_time > #{df}
+		and create_time &lt; #{df2}
+		and company_code in (select distinct company_code from capital_flow_history )
+<!--		order by id desc limit 1350-->
+		group by company_code
+		)
+	</select>
+
+
+	<select id="queryUpUp" resultType="java.lang.String">
+
+		select company_code from capital_flow_history where date_his = #{dfOne} and proportion >0 and change_detail >0
+		and company_code in  (
+		select company_code from capital_flow_history where date_his = #{dfTwo} and proportion >0 and change_detail >0 )
+		and company_code not like '688%' ;
+	</select>
+
+
+</mapper>

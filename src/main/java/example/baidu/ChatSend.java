@@ -21,14 +21,15 @@ public class ChatSend {
             .build();
 
     public static void main(String []args) throws IOException {
-        WenToken wenToken= new WenToken();
-        String token = wenToken.getToken();
+        //WenToken wenToken= new WenToken();
+        String token = WenToken.getAccessToken();
         ChatWenDto chatWenDto = init();
         String userId = UUID.randomUUID().toString();
         chatWenDto.setUser_id(userId);
         List<MessageDto> list = new ArrayList<>();
         chatWenDto.setMessages(list);
         Scanner scanner = new Scanner(System.in);
+
         while (true) {
             System.out.print("You: ");
             String question = scanner.nextLine();
@@ -40,7 +41,7 @@ public class ChatSend {
             MediaType mediaType = MediaType.parse("application/json");
             RequestBody body = RequestBody.create(mediaType, s);
             Request request = new Request.Builder()
-                    .url("https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions_pro?access_token=" + token)
+                    .url("https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-char-fiction-8k?access_token=" + token)
                     .method("POST", body)
                     .addHeader("Content-Type", "application/json")
                     .build();
@@ -58,6 +59,9 @@ public class ChatSend {
         ChatWenDto chatWenDto = new ChatWenDto();
         chatWenDto.setDisable_search(false);
         chatWenDto.setEnable_citation(false);
+        chatWenDto.setTemperature(0.95f);
+        chatWenDto.setTop_p(0.7f);
+        chatWenDto.setPenalty_score(1f);
         return chatWenDto;
     }
 }

@@ -34,7 +34,7 @@ public class ChatSendService {
         MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = RequestBody.create(mediaType, s);
         Request request = new Request.Builder()
-                .url("https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions_pro?access_token=" + token)
+                .url("https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-char-fiction-8k?access_token=" + token)
                 .method("POST", body)
                 .addHeader("Content-Type", "application/json")
                 .build();

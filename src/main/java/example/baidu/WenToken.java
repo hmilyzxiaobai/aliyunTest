@@ -43,8 +43,26 @@ public class WenToken {
         Response response = HTTP_CLIENT.newCall(request).execute();
         String string = response.body().string();
         TokenVo tokenVo = JSON.parseObject(string, TokenVo.class);
-        System.out.println(tokenVo.getAccess_token());
+        //System.out.println(tokenVo.getAccess_token());
         cache.put(TOKEN,tokenVo.getAccess_token());
+        return cache.getIfPresent(TOKEN);
+    }
+    static String getAccessToken() throws IOException {
+        if (!StrUtil.isBlankIfStr(cache.getIfPresent(TOKEN))){
+            return cache.getIfPresent(TOKEN);
+        }
+        MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
+        RequestBody body = RequestBody.create(mediaType, "grant_type=client_credentials&client_id=" + key
+                + "&client_secret=" + secret);
+        Request request = new Request.Builder()
+                .url("https://aip.baidubce.com/oauth/2.0/token")
+                .method("POST", body)
+                .addHeader("Content-Type", "application/x-www-form-urlencoded")
+                .build();
+        Response response = HTTP_CLIENT.newCall(request).execute();
+        JSONObject tokenVo = JSONUtil.parseObj(response.body().string());
+       // System.out.println(tokenVo.getAccess_token());
+        cache.put(TOKEN,tokenVo.getByPath("access_token").toString());
         return cache.getIfPresent(TOKEN);
     }
 

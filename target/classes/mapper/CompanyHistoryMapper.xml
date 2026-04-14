@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="example.dongfangcaifu.mapper.CompanyHistoryMapper">
+
+	<select id="associationPlateCompany" resultType="example.dongfangcaifu.src.entity.CompanyHistoryEntity">
+
+		select * from company_history where company_code in (select company_code from company_info where plate_code like CONCAT('%',#{conceptCode},'%'))
+		order by date_his desc ;
+
+	</select>
+
+
+	<select id="selectOther" resultType="example.dongfangcaifu.src.entity.CompanyOtherEntity">
+
+		SELECT * FROM company_other WHERE company_code = #{companyCode}
+
+
+	</select>
+
+
+</mapper>
