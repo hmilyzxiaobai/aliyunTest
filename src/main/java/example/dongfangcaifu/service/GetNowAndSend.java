@@ -5,6 +5,8 @@ import cn.hutool.json.JSON;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import example.dongfangcaifu.httpUtils.HttpRefererEnum;
+import example.dongfangcaifu.httpUtils.HttpUrlUtils;
 import example.dongfangcaifu.service.email.EmailService;
 import example.dongfangcaifu.src.entity.CapitalFlowHistoryEntity;
 import example.dongfangcaifu.src.entity.CompanyHistoryEntity;
@@ -64,6 +66,8 @@ public class GetNowAndSend {
     @Autowired
     private HoldOnService holdOnService;
 
+    @Autowired
+    private HttpUrlUtils httpUrlUtils;
     public synchronized void saveComInfo() {
         // 查询的uuid
         String uuid = "PASSWORD";
@@ -73,13 +77,12 @@ public class GetNowAndSend {
         try {
             // 设置要发送请求的URL
             String urlString =
-             "https://push2.eastmoney.com/api/qt/clist/get?np=1&fltt=1&invt=2&cb=jQuery37106878664776367346_"+System.currentTimeMillis()+"&fs=b%3ABK0707&fields=f12%2Cf13%2Cf14%2Cf1%2Cf2%2Cf4%2Cf3%2Cf152%2Cf5%2Cf6%2Cf7%2Cf15%2Cf18%2Cf16%2Cf17%2Cf10%2Cf8%2Cf9%2Cf23%2Cf26&fid=f26&pn="+page+"&pz="+size+"&po=1&dect=1&ut=fa5fd1943c7b386f172d6893dbfba10b&wbp2u=%7C0%7C0%7C0%7Cweb&_="+System.currentTimeMillis();
+                "https://push2.eastmoney.com/api/qt/clist/get?np=1&fltt=1&invt=2&cb=jQuery37107591229855109933_1776222019251&fs=b%3ABK0707&fields=f12%2Cf13%2Cf14%2Cf1%2Cf2%2Cf4%2Cf3%2Cf152%2Cf5%2Cf6%2Cf7%2Cf15%2Cf18%2Cf16%2Cf17%2Cf10%2Cf8%2Cf9%2Cf23%2Cf26&fid=f26&pn="+page+"&pz="+size+"po=1&dect=1&ut=fa5fd1943c7b386f172d6893dbfba10b&wbp2u=9250355984212214%7C0%7C1%7C0%7Cweb&_=1776222019258";
 
             URL url = new URL(urlString);
             // 打开连接
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            HttpURLConnection connection = httpUrlUtils.httpBuildUrlUtils(url, HttpRefererEnum.CODE);
             // 设置请求方法为GET
-            connection.setRequestMethod("GET");
             // 获取响应内容
             BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             StringBuilder response = new StringBuilder();
@@ -189,12 +192,12 @@ public class GetNowAndSend {
             String urlString =
             //        String.format("https://70.push2.eastmoney.com/api/qt/clist/get?cb=%S&pn=%S&pz=%S&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&wbp2u=|0|0|0|web&fid=f3&fs=m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23,m:0+t:81+s:2048&fields=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f12,f13,f14,f15,f16,f17,f18,f20,f21,f23,f24,f25,f22,f11,f62,f128,f136,f115,f152&_=1714361372410",uuid,page,size);
            // "https://41.push2.eastmoney.com/api/qt/clist/get?cb=jQuery35104660061245692523_"+System.currentTimeMillis()+"&pn="+page+"&pz="+size+"&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&dect=1&wbp2u=|0|0|0|web&fid=f26&fs=b:BK0707&fields=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f12,f13,f14,f15,f16,f17,f18,f20,f21,f23,f24,f25,f26,f22,f11,f62,f128,f136,f115,f152&_="+System.currentTimeMillis()
-                    "https://push2.eastmoney.com/api/qt/clist/get?np=1&fltt=1&invt=2&cb=jQuery37106878664776367346_"+System.currentTimeMillis()+"&fs=b%3ABK0707&fields=f12%2Cf13%2Cf14%2Cf1%2Cf2%2Cf4%2Cf3%2Cf152%2Cf5%2Cf6%2Cf7%2Cf15%2Cf18%2Cf16%2Cf17%2Cf10%2Cf8%2Cf9%2Cf23%2Cf26&fid=f26&pn="+page+"&pz="+size+"&po=1&dect=1&ut=fa5fd1943c7b386f172d6893dbfba10b&wbp2u=%7C0%7C0%7C0%7Cweb&_="+System.currentTimeMillis();
+                    "https://push2.eastmoney.com/api/qt/clist/get?np=1&fltt=1&invt=2&cb=jQuery37107591229855109933_1776222019251&fs=b%3ABK0707&fields=f12%2Cf13%2Cf14%2Cf1%2Cf2%2Cf4%2Cf3%2Cf152%2Cf5%2Cf6%2Cf7%2Cf15%2Cf18%2Cf16%2Cf17%2Cf10%2Cf8%2Cf9%2Cf23%2Cf26&fid=f26&pn="+page+"&pz="+size+"po=1&dect=1&ut=fa5fd1943c7b386f172d6893dbfba10b&wbp2u=9250355984212214%7C0%7C1%7C0%7Cweb&_=1776222019258";
 
 
             URL url = new URL(urlString);
             // 打开连接
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            HttpURLConnection connection = httpUrlUtils.httpBuildUrlUtils(url, HttpRefererEnum.CODE);
             // 设置请求方法为GET
             connection.setRequestMethod("GET");
             // 获取响应内容
@@ -293,9 +296,8 @@ public class GetNowAndSend {
                     "https://push2delay.eastmoney.com/api/qt/ulist.np/get?cb=jQuery112304668133973971953_1729232254223&fltt=2&secids=1."+code+"&fields=f62%2Cf184%2Cf66%2Cf69%2Cf72%2Cf75%2Cf78%2Cf81%2Cf84%2Cf87%2Cf64%2Cf65%2Cf70%2Cf71%2Cf76%2Cf77%2Cf82%2Cf83%2Cf164%2Cf166%2Cf168%2Cf170%2Cf172%2Cf252%2Cf253%2Cf254%2Cf255%2Cf256%2Cf124%2Cf6%2Cf278%2Cf279%2Cf280%2Cf281%2Cf282&ut=b2884a393a59ad64002292a3e90d46a5&_=1729232254224";
             URL url = new URL(urlString);
             // 打开连接
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            HttpURLConnection connection = httpUrlUtils.httpBuildUrlUtils(url,code, HttpRefererEnum.HUDATA);
             // 设置请求方法为GET
-            connection.setRequestMethod("GET");
             // 获取响应内容
             BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             StringBuilder response = new StringBuilder();

@@ -135,7 +135,7 @@ public class CompanyCapitalAnalysisHistoryService extends ServiceImpl<CompanyCap
             }
             // 关闭连接
             connection.disconnect();
-            Thread.sleep(2000);
+
         } catch (Exception e) {
 //            e.printStackTrace();
         }
