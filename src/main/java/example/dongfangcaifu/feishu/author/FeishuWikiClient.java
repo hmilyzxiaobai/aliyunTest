@@ -50,6 +50,8 @@ public class FeishuWikiClient {
         body.put("app_id", appId);
         body.put("app_secret", appSecret);
 
+
+
         httpPost.setEntity(new StringEntity(objectMapper.writeValueAsString(body), ContentType.parse("UTF-8")));
         httpPost.setHeader("Content-Type", "application/json");
 

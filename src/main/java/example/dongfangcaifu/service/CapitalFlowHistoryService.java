@@ -8,6 +8,8 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import example.dongfangcaifu.httpUtils.HttpRefererEnum;
+import example.dongfangcaifu.httpUtils.HttpUrlUtils;
 import example.dongfangcaifu.mapper.CapitalFlowHistoryMapper;
 import example.dongfangcaifu.src.entity.CapitalFlowHistoryEntity;
 import example.dongfangcaifu.src.entity.CompanyHistoryEntity;
@@ -43,6 +45,9 @@ public class CapitalFlowHistoryService extends ServiceImpl<CapitalFlowHistoryMap
 
     @Autowired
     private CompanyHistoryService companyHistoryService;
+
+    @Autowired
+    private HttpUrlUtils httpUrlUtils;
 
     static List<CompanyHistoryEntity> saveInfoList = new ArrayList<>();
     public CapitalFlowHistoryResponse judgeByCapitalHis(FinancialInfoDmEntity financialInfoDmEntity){
@@ -212,12 +217,11 @@ public class CapitalFlowHistoryService extends ServiceImpl<CapitalFlowHistoryMap
     private boolean checkData(List<CapitalFlowHistoryEntity> list){
         Set<String> collect = list.stream().map(CapitalFlowHistoryEntity::getDateHis).collect(Collectors.toSet());
 
-        return collect.contains("2025-11-17")
-                && collect.contains("2025-11-18")
-                && collect.contains("2025-11-19")
-                && collect.contains("2025-11-20")
-                && collect.contains("2025-11-21")
-                && collect.contains("2025-11-24");
+        return collect.contains("2026-04-15")
+                && collect.contains("2026-04-14")
+                && collect.contains("2026-04-13")
+                && collect.contains("2026-04-10")
+                && collect.contains("2026-04-09");
 
     }
 
@@ -249,7 +253,7 @@ public class CapitalFlowHistoryService extends ServiceImpl<CapitalFlowHistoryMap
 
             URL url = new URL(urlString);
             // 打开连接
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            HttpURLConnection connection = httpUrlUtils.httpBuildUrlUtils(url,code, HttpRefererEnum.HUDATA);
             // 设置请求方法为GET
             connection.setRequestMethod("GET");
             // 获取响应内容
@@ -278,7 +282,7 @@ public class CapitalFlowHistoryService extends ServiceImpl<CapitalFlowHistoryMap
 
                 url = new URL(urlString);
                 // 打开连接
-                connection = (HttpURLConnection) url.openConnection();
+                connection = httpUrlUtils.httpBuildUrlUtils(url,code,HttpRefererEnum.CODE);
                 // 设置请求方法为GET
                 connection.setRequestMethod("GET");
                 // 获取响应内容

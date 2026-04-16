@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,12 +41,24 @@ public class WriteInfoController {
     @Autowired
     private GetNowAndSendShenA getNowAndSendShenA;
 
+    @Autowired
+    private GetAllInfoShenA getAllInfoShenA;
     /**
      * 写入全部公司信息
      */
-    @GetMapping("write")
+    @GetMapping("write/hu")
     private void writeCompanyAll(){
         getAllInfo.saveComInfo(0);
+        log.info("访问结束");
+        log.info("访问结束");
+        log.info("访问结束");
+    }
+    @GetMapping("write/shen")
+    public void testShenInfo(){
+        getAllInfoShenA.saveComInfo(0);
+        log.info("访问结束");
+        log.info("访问结束");
+        log.info("访问结束");
     }
 
     /**
@@ -157,14 +170,44 @@ public class WriteInfoController {
         return "成功";
     }
 
+    @GetMapping("page/data")
+    public String getPageData(@RequestParam(value = "page") int page,
+                              @RequestParam(value = "size")String size,
+                              @RequestParam(value = "code")String code){
+        for(;page<=34;page++){
+            String pageData = companyHistoryService.getPageData(String.valueOf(page), size);
+            String[] split = pageData.split(",");
+            int index = 0;
+            index = Math.max(index,Arrays.asList(split).indexOf(code));
+
+            for(;index<split.length;index++){
+                String str = split[index];
+                if (StringUtils.isEmpty(str)){
+                    System.out.println(page);
+                    return "结束";
+                }
+                boolean flag = companyHistoryService.rebuild(str, "jQuery351032503703519901184_1763996017287");
+                if (!flag){
+                    System.out.println("当前page"+page+"当前代码"+str);
+                    return "结束";
+                }
+            }
+        }
+        return "补全部分涨跌数据成功";
+    }
+
     @GetMapping("rebuild/page/data")
     public String rebuildPage(@RequestParam(value = "page") int page
     ,@RequestParam(value = "jquery") String jquery,@RequestParam(value = "cul") String cul
             ,@RequestParam(value = "ignoreCode") String ignoreCode){
-        for(;page<=70;page++){
-            String pageData = companyHistoryService.getPageData(String.valueOf(page), "20");
+        for(;page<=34;page++){
+            String pageData = companyHistoryService.getPageData(String.valueOf(page), "50");
             String[] split = pageData.split(",");
-            for(String str:split){
+            int index=0;
+            index = Math.max(index,Arrays.asList(split).indexOf(ignoreCode));
+
+            for(;index<split.length;index++){
+                String str = split[index];
                 if (StringUtils.isEmpty(str)){
                     System.out.println(page);
                     //return "结束";
@@ -224,26 +267,7 @@ public class WriteInfoController {
         return "补全部分涨跌数据成功";
     }
 
-    @GetMapping("page/data")
-    public String getPageData(@RequestParam(value = "page") int page,@RequestParam(value = "size")String size){
-        for(;page<=28;page++){
-            String pageData = companyHistoryService.getPageData(String.valueOf(page), size);
-            String[] split = pageData.split(",");
-            for(String str:split){
 
-                if (StringUtils.isEmpty(str)){
-                    System.out.println(page);
-                    return "结束";
-                }
-                boolean flag = companyHistoryService.rebuild(str, "jQuery351032503703519901184_1763996017287");
-                if (!flag){
-                    System.out.println("当前page"+page+"当前代码"+str);
-                    return "结束";
-                }
-            }
-        }
-        return "补全部分涨跌数据成功";
-    }
 
     @Autowired
     private HoldOnService holdOnService;

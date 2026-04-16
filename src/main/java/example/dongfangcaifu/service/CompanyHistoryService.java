@@ -9,6 +9,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import example.dongfangcaifu.httpUtils.HttpRefererEnum;
+import example.dongfangcaifu.httpUtils.HttpUrlUtils;
 import example.dongfangcaifu.mapper.CompanyHistoryMapper;
 import example.dongfangcaifu.src.dto.MeanSum;
 import example.dongfangcaifu.src.entity.*;
@@ -19,6 +21,7 @@ import example.dongfangcaifu.utils.TimeUtilsZ;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.io.BufferedReader;
@@ -31,10 +34,13 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@Transactional
 public class CompanyHistoryService extends ServiceImpl<CompanyHistoryMapper, CompanyHistoryEntity> {
     @Autowired
     private CompanyInfoService companyInfoService;
 
+    @Autowired
+    private HttpUrlUtils httpUrlUtils;
 
     private static final NumberFormat numberFormat = NumberFormat.getInstance();
     static {
@@ -210,11 +216,11 @@ public class CompanyHistoryService extends ServiceImpl<CompanyHistoryMapper, Com
     private boolean checkData(List<CompanyHistoryEntity> list){
         Set<String> collect = list.stream().map(CompanyHistoryEntity::getDateHis).collect(Collectors.toSet());
 
-        return collect.contains("2025-11-17")
-                && collect.contains("2025-11-18")
-                && collect.contains("2025-11-19")
-                && collect.contains("2025-11-20")
-                && collect.contains("2025-11-21");
+        return collect.contains("2026-04-15")
+                && collect.contains("2026-04-14")
+                && collect.contains("2026-04-13")
+                && collect.contains("2026-04-10")
+                && collect.contains("2026-04-09");
 
     }
 
@@ -270,16 +276,18 @@ public class CompanyHistoryService extends ServiceImpl<CompanyHistoryMapper, Com
         List<CompanyHistoryEntity> saveList = new ArrayList<>();
         try{
             String urlString =
-                //   "https://push2his.eastmoney.com/api/qt/stock/kline/get?cb=jQuery35103458189631037627_1715506453184&secid=1.600665&ut=fa5fd1943c7b386f172d6893dbfba10b&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&end=20500101&lmt=120&_=1715506453297";
-            "https://push2his.eastmoney.com/api/qt/stock/kline/get?cb="+jquery+"&secid=0."+code+"&ut=fa5fd1943c7b386f172d6893dbfba10b&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&beg=0&end=20500101&lmt=120&_="+System.currentTimeMillis();
-//            https://push2his.eastmoney.com/api/qt/stock/kline/get?cb=&secid=0.301262&ut=fa5fd1943c7b386f172d6893dbfba10b&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&end=20500101&lmt=1000000&_=1758629560953
+            // 沪深的用kline
+           // "https://push2his.eastmoney.com/api/qt/stock/kline/get?cb="+jquery+"&secid=0."+code+"&ut=fa5fd1943c7b386f172d6893dbfba10b&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&beg=0&end=20500101&lmt=120&_="+System.currentTimeMillis();
+           // 深沪的用fflow/daykine
+
+            "https://push2his.eastmoney.com/api/qt/stock/fflow/daykline/get?cb=jQuery112307239334035396534_1776256055892&lmt=0&klt=101&fields1=f1%2Cf2%2Cf3%2Cf7&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf62%2Cf63%2Cf64%2Cf65&ut=b2884a393a59ad64002292a3e90d46a5&secid=0."+code+"&_="+System.currentTimeMillis();
+
+            //  https://push2his.eastmoney.com/api/qt/stock/fflow/daykline/get?cb=jQuery1123035767427159617116_1776223308768&lmt=0&klt=101&fields1=f1%2Cf2%2Cf3%2Cf7&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf62%2Cf63%2Cf64%2Cf65&ut=b2884a393a59ad64002292a3e90d46a5&secid=0.301629&_=1776223308769
 
             URL url = new URL(urlString);
             // 打开连接
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            // 设置请求方法为GET
-            connection.setRequestMethod("GET");
-            // 获取响应内容
+            HttpURLConnection connection = httpUrlUtils.httpBuildUrlUtils(url,code,HttpRefererEnum.HUDATA);
+
             BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             StringBuilder response = new StringBuilder();
             String inputLine;
@@ -310,11 +318,12 @@ public class CompanyHistoryService extends ServiceImpl<CompanyHistoryMapper, Com
             if (Objects.isNull(klineDataAll) || klineDataAll.toString().equals("null")){
                 urlString =
                         //   "https://push2his.eastmoney.com/api/qt/stock/kline/get?cb=jQuery35103458189631037627_1715506453184&secid=1.600665&ut=fa5fd1943c7b386f172d6893dbfba10b&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&end=20500101&lmt=120&_=1715506453297";
-                        "https://push2his.eastmoney.com/api/qt/stock/kline/get?cb="+jquery+"&secid=1."+code+"&ut=fa5fd1943c7b386f172d6893dbfba10b&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&beg=0&end=20500101&lmt=120&_="+System.currentTimeMillis();
+                     //   "https://push2his.eastmoney.com/api/qt/stock/kline/get?cb="+jquery+"&secid=1."+code+"&ut=fa5fd1943c7b386f172d6893dbfba10b&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&beg=0&end=20500101&lmt=120&_="+System.currentTimeMillis();
+                "https://push2his.eastmoney.com/api/qt/stock/fflow/daykline/get?cb=jQuery112307239334035396534_1776256055892&lmt=0&klt=101&fields1=f1%2Cf2%2Cf3%2Cf7&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf62%2Cf63%2Cf64%2Cf65&ut=b2884a393a59ad64002292a3e90d46a5&secid=1."+code+"&_="+System.currentTimeMillis();
 
-                  url = new URL(urlString);
+                url = new URL(urlString);
                 // 打开连接
-                  connection = (HttpURLConnection) url.openConnection();
+                connection = httpUrlUtils.httpBuildUrlUtils(url,code,HttpRefererEnum.HUDATA);
                 // 设置请求方法为GET
                 connection.setRequestMethod("GET");
                 // 获取响应内容
@@ -382,22 +391,18 @@ https://push2his.eastmoney.com/api/qt/stock/kline/get?cb=jQuery35108797847003193
         return "";
     }
 
-    //public static void main(String[] args){
     public String getPageData(String page,String size){
         try {
             String urlString =
-                    //   "https://push2his.eastmoney.com/api/qt/stock/kline/get?cb=jQuery35103458189631037627_1715506453184&secid=1.600665&ut=fa5fd1943c7b386f172d6893dbfba10b&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&end=20500101&lmt=120&_=1715506453297";
-           // "http://79.push2.eastmoney.com/api/qt/clist/get?cb=jQuery112407616952473227918_1729787152720&pn="+page+"&pz="+size+"&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&dect=1&wbp2u=|0|0|0|web&fid=f26&fs=b:BK0707&fields=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f12,f13,f14,f15,f16,f17,f18,f20,f21,f23,f24,f25,f26,f22,f11,f62,f128,f136,f115,f152&_=1729787152721";
-           "http://push2.eastmoney.com/api/qt/clist/get?np=1&fltt=1&invt=2&cb=jQuery37106893369046196152_1763981505948&fs=b%3ABK0707&fields=f12%2Cf13%2Cf14%2Cf1%2Cf2%2Cf4%2Cf3%2Cf152%2Cf5%2Cf6%2Cf7%2Cf15%2Cf18%2Cf16%2Cf17%2Cf10%2Cf8%2Cf9%2Cf23%2Cf26&fid=f26&pn="+page+"&pz="+size+"&po=1&dect=1&ut=fa5fd1943c7b386f172d6893dbfba10b&wbp2u=%7C0%7C0%7C0%7Cweb&_=1763981505950";
+                    // 沪深 板块不同 所以只用改一个就行
+           // "https://push2.eastmoney.com/api/qt/clist/get?np=1&fltt=1&invt=2&cb=jQuery37107591229855109933_1776222019251&fs=b%3ABK0707&fields=f12%2Cf13%2Cf14%2Cf1%2Cf2%2Cf4%2Cf3%2Cf152%2Cf5%2Cf6%2Cf7%2Cf15%2Cf18%2Cf16%2Cf17%2Cf10%2Cf8%2Cf9%2Cf23%2Cf26&fid=f26&pn="+page+"&pz="+size+"po=1&dect=1&ut=fa5fd1943c7b386f172d6893dbfba10b&wbp2u=9250355984212214%7C0%7C1%7C0%7Cweb&_=1776222019258";
+                    // 深沪
+            "https://push2.eastmoney.com/api/qt/clist/get?np=1&fltt=1&invt=2&cb=jQuery37107591229855109933_1776222019251&fs=b%3ABK0804&fields=f12%2Cf13%2Cf14%2Cf1%2Cf2%2Cf4%2Cf3%2Cf152%2Cf5%2Cf6%2Cf7%2Cf15%2Cf18%2Cf16%2Cf17%2Cf10%2Cf8%2Cf9%2Cf23%2Cf26%2Cf292&fid=f26&pn="+page+"&pz="+size+"po=1&dect=1&ut=fa5fd1943c7b386f172d6893dbfba10b&wbp2u=9250355984212214%7C0%7C1%7C0%7Cweb&_=1776222019258";
 
-            // 沪 A
-           // 深A
-            //"http://79.push2.eastmoney.com/api/qt/clist/get?cb=jQuery351009672644440647704_1734337981055&pn="+page+"&pz="+size+"&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&dect=1&wbp2u=|0|0|0|web&fid=f26&fs=b:BK0804&fields=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f12,f13,f14,f15,f16,f17,f18,f20,f21,f23,f24,f25,f26,f22,f11,f62,f128,f136,f115,f152&_=1729787152721";
             URL url = new URL(urlString);
             // 打开连接
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            HttpURLConnection connection = httpUrlUtils.httpBuildUrlUtils(url, HttpRefererEnum.CODE);
             // 设置请求方法为GET
-            connection.setRequestMethod("GET");
             // 获取响应内容
             BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             StringBuilder response = new StringBuilder();
@@ -418,8 +423,9 @@ https://push2his.eastmoney.com/api/qt/stock/kline/get?cb=jQuery35108797847003193
             StringBuilder sb = new StringBuilder();
             for(Object o:objects){
                 JSONObject jsonObject1 = JSONUtil.parseObj(o);
-
-                sb.append(jsonObject1.get("f12")).append(",");
+                if ("5".equals(jsonObject1.get("f292").toString())){
+                    sb.append(jsonObject1.get("f12")).append(",");
+                }
             }
             System.out.println(sb.toString());
             return sb.toString();

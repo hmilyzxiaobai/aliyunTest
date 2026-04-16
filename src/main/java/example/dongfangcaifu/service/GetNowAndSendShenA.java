@@ -271,7 +271,7 @@ public class GetNowAndSendShenA {
         dm.setTurnoverRate(turnoverRate);
         dm.setTradingVolume(tradingVolume);
         dm.setVolumeOfTransaction(volumeOfTransaction);
-       // getCapitalNow(code,dm);
+        getCapitalNow(code,dm);
         savesCodeDfList.add(dm);
     }
 

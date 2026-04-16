@@ -8,12 +8,15 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import example.dongfangcaifu.httpUtils.HttpRefererEnum;
+import example.dongfangcaifu.httpUtils.HttpUrlUtils;
 import example.dongfangcaifu.mapper.CompanyCapitalAnalysisHistoryMapper;
 import example.dongfangcaifu.src.entity.CompanyCapitalAnalysisHistoryEntity;
 import example.dongfangcaifu.src.entity.CompanyHistoryEntity;
 import example.dongfangcaifu.utils.ExcelWriteNowDay;
 import example.dongfangcaifu.utils.FloatUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -25,6 +28,9 @@ import java.util.*;
 @Service
 @Slf4j
 public class CompanyCapitalAnalysisHistoryService extends ServiceImpl<CompanyCapitalAnalysisHistoryMapper, CompanyCapitalAnalysisHistoryEntity> {
+
+    @Autowired
+    private HttpUrlUtils httpUrlUtils;
 
     static List<CompanyCapitalAnalysisHistoryEntity> saveList = new ArrayList<>();
 
@@ -40,9 +46,9 @@ public class CompanyCapitalAnalysisHistoryService extends ServiceImpl<CompanyCap
                     "https://push2.eastmoney.com/api/qt/clist/get?cb=jQuery11230018427465295197898_1768379163740&fid=f62&po=1&pz=50&pn=1&np=1&fltt=2&invt=2&ut=8dec03ba335b81bf4ebdf7b29ec27d15&fs=m%3A0%2Bt%3A6%2Bf%3A!2%2Cm%3A0%2Bt%3A13%2Bf%3A!2%2Cm%3A0%2Bt%3A80%2Bf%3A!2%2Cm%3A1%2Bt%3A2%2Bf%3A!2%2Cm%3A1%2Bt%3A23%2Bf%3A!2%2Cm%3A0%2Bt%3A7%2Bf%3A!2%2Cm%3A1%2Bt%3A3%2Bf%3A!2&fields=f12%2Cf14%2Cf2%2Cf3%2Cf62%2Cf184%2Cf66%2Cf69%2Cf72%2Cf75%2Cf78%2Cf81%2Cf84%2Cf87%2Cf204%2Cf205%2Cf124%2Cf1%2Cf13";
             URL url = new URL(urlString);
             // 打开连接
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            HttpURLConnection connection = httpUrlUtils.httpBuildUrlUtils(url, HttpRefererEnum.CODE);
             // 设置请求方法为GET
-            connection.setRequestMethod("GET");
+
             // 获取响应内容
             BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             StringBuilder response = new StringBuilder();
@@ -102,9 +108,9 @@ public class CompanyCapitalAnalysisHistoryService extends ServiceImpl<CompanyCap
                     "https://push2.eastmoney.com/api/qt/clist/get?cb=jQuery11230018427465295197898_1768379163740&fid=f62&po=1&pz="+size+"&pn="+page+"&np=1&fltt=2&invt=2&ut=8dec03ba335b81bf4ebdf7b29ec27d15&fs=m%3A0%2Bt%3A6%2Bf%3A!2%2Cm%3A0%2Bt%3A13%2Bf%3A!2%2Cm%3A0%2Bt%3A80%2Bf%3A!2%2Cm%3A1%2Bt%3A2%2Bf%3A!2%2Cm%3A1%2Bt%3A23%2Bf%3A!2%2Cm%3A0%2Bt%3A7%2Bf%3A!2%2Cm%3A1%2Bt%3A3%2Bf%3A!2&fields=f12%2Cf14%2Cf2%2Cf3%2Cf62%2Cf184%2Cf66%2Cf69%2Cf72%2Cf75%2Cf78%2Cf81%2Cf84%2Cf87%2Cf204%2Cf205%2Cf124%2Cf1%2Cf13";
             URL url = new URL(urlString);
             // 打开连接
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            HttpURLConnection connection = httpUrlUtils.httpBuildUrlUtils(url,HttpRefererEnum.CODE);
             // 设置请求方法为GET
-            connection.setRequestMethod("GET");
+
             // 获取响应内容
             BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             StringBuilder response = new StringBuilder();

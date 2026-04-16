@@ -3,6 +3,8 @@ package example.dongfangcaifu.service.surveillance;
 import cn.hutool.json.JSON;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import example.dongfangcaifu.httpUtils.HttpRefererEnum;
+import example.dongfangcaifu.httpUtils.HttpUrlUtils;
 import example.dongfangcaifu.service.CompanyHistoryService;
 import example.dongfangcaifu.service.simulation.JsonExtractor2;
 import example.dongfangcaifu.utils.FloatUtils;
@@ -25,7 +27,8 @@ public class MonitoringUtilsService {
     static Float capitalNow;
     @Autowired
     private CompanyHistoryService companyHistoryService;
-
+    @Autowired
+    private HttpUrlUtils httpUrlUtils;
     public void searchData(String companyName, String code, String price) {
         float priceNow = readNowData(code);
         Float setPrice = FloatUtils.stringToFloat(price);
@@ -67,7 +70,7 @@ public class MonitoringUtilsService {
                     "https://push2.eastmoney.com/api/qt/stock/details/get?fields1=f1,f2,f3,f4&fields2=f51,f52,f53,f54,f55&fltt=2&cb=jQuery3510259253290888554_1767067259427&pos=-11&secid=1." + code + "&ut=fa5fd1943c7b386f172d6893dbfba10b&wbp2u=%7C0%7C0%7C0%7Cweb&_=1767067259428";
             URL url = new URL(urlString);
             // 打开连接
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            HttpURLConnection connection = httpUrlUtils.httpBuildUrlUtils(url,code, HttpRefererEnum.HUDATA);
             // 设置请求方法为GET
             connection.setRequestMethod("GET");
             // 获取响应内容
@@ -146,7 +149,7 @@ public class MonitoringUtilsService {
                     "https://push2.eastmoney.com/api/qt/stock/get?invt=2&fltt=1&cb=jQuery35102821228802484421_1767857879669&fields=f138%2Cf139%2Cf141%2Cf142%2Cf144%2Cf145%2Cf147%2Cf148%2Cf137%2Cf193%2Cf152%2Cf140%2Cf194%2Cf143%2Cf195%2Cf146%2Cf196%2Cf149%2Cf197&secid=" + type + "." + code + "&ut=fa5fd1943c7b386f172d6893dbfba10b&wbp2u=%7C0%7C0%7C0%7Cweb&dect=1&_=1767857879670";
             URL url = new URL(urlString);
             // 打开连接
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            HttpURLConnection connection = httpUrlUtils.httpBuildUrlUtils(url,code,HttpRefererEnum.HUDATA);
             // 设置请求方法为GET
             connection.setRequestMethod("GET");
             // 获取响应内容
