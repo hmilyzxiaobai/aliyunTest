@@ -13,6 +13,7 @@ import example.dongfangcaifu.httpUtils.HttpUrlUtils;
 import example.dongfangcaifu.mapper.CompanyCapitalAnalysisHistoryMapper;
 import example.dongfangcaifu.src.entity.CompanyCapitalAnalysisHistoryEntity;
 import example.dongfangcaifu.src.entity.CompanyHistoryEntity;
+import example.dongfangcaifu.utils.DealPrice;
 import example.dongfangcaifu.utils.ExcelWriteNowDay;
 import example.dongfangcaifu.utils.FloatUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -143,7 +144,7 @@ public class CompanyCapitalAnalysisHistoryService extends ServiceImpl<CompanyCap
 
     private void addSaveList(JSONObject jsonObject1,String df){
         CompanyCapitalAnalysisHistoryEntity com = new CompanyCapitalAnalysisHistoryEntity();
-        String 最新价格 = jsonObject1.get("f2",String.class);
+        String 最新价格 = DealPrice.dealPrice(jsonObject1.get("f2",String.class));;
         String 板块 = jsonObject1.get("f13",String.class);  // 0 深A  1 沪A
         String 涨跌幅 = jsonObject1.get("f3",String.class);
         String 公司名字  = jsonObject1.get("f14",String.class);

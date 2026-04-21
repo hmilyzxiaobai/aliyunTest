@@ -8,6 +8,7 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import example.dongfangcaifu.src.entity.Plate;
 import example.dongfangcaifu.src.entity.PlateHis;
+import example.dongfangcaifu.utils.DealPrice;
 import example.dongfangcaifu.utils.FloatUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -171,7 +172,7 @@ public class GetGaiNian {
                 String 换手率 = jsonObject1.get("f8",String.class);
 
                 String 总市值 = jsonObject1.get("f20",String.class);
-                String 最新价格 = jsonObject1.get("f2",String.class);
+                String 最新价格 = DealPrice.dealPrice(jsonObject1.get("f2",String.class));;
                 String 上涨个数 = jsonObject1.get("f104",String.class);
                 String 下跌个数 = jsonObject1.get("f105",String.class);
 

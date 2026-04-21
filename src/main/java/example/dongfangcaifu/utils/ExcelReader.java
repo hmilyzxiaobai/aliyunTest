@@ -120,6 +120,24 @@ public class ExcelReader {
         return res;
 
     }
+    public static List<List<String>> printExcelData(String filePathInput) {
+        List<List<String>> data = readExcelByRow(filePathInput);
+        List<List<String>> res = new ArrayList<>();
+
+        for (int i = 1; i < data.size(); i++) {
+            // System.out.print("第 " + (i + 1) + " 行: ");
+            List<String> one = new ArrayList<>();
+
+            for (String cell : data.get(i)) {
+                System.out.print(cell + "\t");
+                one.add(cell);
+            }
+            res.add(one);
+            System.out.println();
+        }
+        return res;
+
+    }
 
 //    public static void main(String[] args) {
 //

@@ -10,6 +10,7 @@ import example.dongfangcaifu.httpUtils.HttpUrlUtils;
 import example.dongfangcaifu.service.email.EmailService;
 import example.dongfangcaifu.src.entity.CompanyInfoEntity;
 import example.dongfangcaifu.src.entity.FinancialInfoDmEntity;
+import example.dongfangcaifu.utils.DealPrice;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -211,7 +212,7 @@ public class GetAllInfo {
             for(int i=0;i<objects.size();i++){
                 Object o = objects.get(i);
                 JSONObject jsonObject1 = JSONUtil.parseObj(o);
-                String 最新价格 = jsonObject1.get("f2",String.class);
+                String 最新价格 = DealPrice.dealPrice(jsonObject1.get("f2",String.class));
                 String 板块 = jsonObject1.get("f13",String.class);  // 0 深A  1 沪A
                 String 涨跌幅 = jsonObject1.get("f3",String.class);
                 String 涨跌额 = jsonObject1.get("f4",String.class);
@@ -220,8 +221,8 @@ public class GetAllInfo {
                 String 成交额振幅 = jsonObject1.get("f7",String.class);
                 String 换手率 = jsonObject1.get("f8",String.class);
                 String 市盈率 = jsonObject1.get("f9",String.class);
-                String 当日最高 = jsonObject1.get("f15",String.class);
-                String 当日最低 = jsonObject1.get("f16",String.class);
+                String 当日最高 = DealPrice.dealPrice(jsonObject1.get("f15",String.class));
+                String 当日最低 = DealPrice.dealPrice(jsonObject1.get("f16",String.class));;
                 String 今天开 = jsonObject1.get("f17",String.class);
                 String 昨天收 = jsonObject1.get("f18",String.class);
                 String 上市时间  = jsonObject1.get("f26",String.class);

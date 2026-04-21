@@ -15,6 +15,7 @@ import example.dongfangcaifu.src.entity.FinancialInfoDmEntity;
 import example.dongfangcaifu.src.response.CapitalFlowHistoryResponse;
 import example.dongfangcaifu.src.response.GouResponse;
 import example.dongfangcaifu.src.response.JudgeVo;
+import example.dongfangcaifu.utils.DealPrice;
 import example.dongfangcaifu.utils.ExcelWriter;
 import example.dongfangcaifu.utils.FloatUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -227,7 +228,7 @@ public class GetNowAndSend {
             for(int i=0;i<objects.size();i++){
                 Object o = objects.get(i);
                 JSONObject jsonObject1 = JSONUtil.parseObj(o);
-                String 最新价格 = jsonObject1.get("f2",String.class);
+                String 最新价格 = DealPrice.dealPrice(jsonObject1.get("f2",String.class));
                 String 板块 = jsonObject1.get("f13",String.class);  // 0 深A  1 沪A
                 String 涨跌幅 = jsonObject1.get("f3",String.class);
                 String 涨跌额 = jsonObject1.get("f4",String.class);
@@ -236,8 +237,8 @@ public class GetNowAndSend {
                 String 成交额振幅 = jsonObject1.get("f7",String.class);
                 String 换手率 = jsonObject1.get("f8",String.class);
                 String 市盈率 = jsonObject1.get("f9",String.class);
-                String 当日最高 = jsonObject1.get("f15",String.class);
-                String 当日最低 = jsonObject1.get("f16",String.class);
+                String 当日最高 = DealPrice.dealPrice(jsonObject1.get("f15",String.class));
+                String 当日最低 = DealPrice.dealPrice(jsonObject1.get("f16",String.class));
                 String 今天开 = jsonObject1.get("f17",String.class);
                 String 昨天收 = jsonObject1.get("f18",String.class);
                 String 上市时间  = jsonObject1.get("f26",String.class);
@@ -277,7 +278,7 @@ public class GetNowAndSend {
         dm.setTurnoverRate(turnoverRate);
         dm.setVolumeOfTransaction(volumeOfTransaction);
         dm.setTradingVolume(tradingVolume);
-        getCapitalNow(code,dm);
+       // getCapitalNow(code,dm);
         savesCodeDfList.add(dm);
     }
 

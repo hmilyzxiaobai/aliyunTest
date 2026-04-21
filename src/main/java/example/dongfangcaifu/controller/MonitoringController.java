@@ -47,6 +47,31 @@ public class MonitoringController {
         return "执行完成";
     }
 
+    @GetMapping("macd/read")
+    private String monitorMacdExcelData(){
+        String filePath = "D:\\东方财富分析日报\\macd分析\\20260420\\转正.xlsx";
+        // 拿到excel的数据
+        List<List<String>> lists = ExcelReader.printExcelData(filePath);
+        int indexUp=0;
+        int indexDown=0;
+        int errorRead=0;
+        for(List<String> data:lists){
+            //  System.out.println(data.toString());
+            int res = monitoringUtilsService.monitorMacdExcelData(data.get(0),data.get(1),data.get(4));
+            if (res==3){
+                break;
+            }
+            switch (res){
+                case 1:indexUp++;break;
+                case 2:indexDown++;break;
+                case 3:errorRead++;break;
+            }
+
+        }
+        log.info("该数据中总数为{}，涨的个数为{}，跌的个数为{}，读取失败个数为{}",lists.size(),indexUp,indexDown,errorRead);
+        return "执行完成";
+    }
+
     @Scheduled(cron = "0 0/15 9-15 * * ?")
     private String monitorExcelDataScheduled(){
         // 拿到excel的数据

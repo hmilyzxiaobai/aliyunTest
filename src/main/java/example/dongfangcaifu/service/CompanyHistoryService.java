@@ -15,9 +15,7 @@ import example.dongfangcaifu.mapper.CompanyHistoryMapper;
 import example.dongfangcaifu.src.dto.MeanSum;
 import example.dongfangcaifu.src.entity.*;
 import example.dongfangcaifu.src.response.JudgeVo;
-import example.dongfangcaifu.utils.ExcelWriteNowDay;
-import example.dongfangcaifu.utils.FloatUtils;
-import example.dongfangcaifu.utils.TimeUtilsZ;
+import example.dongfangcaifu.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -277,10 +275,10 @@ public class CompanyHistoryService extends ServiceImpl<CompanyHistoryMapper, Com
         try{
             String urlString =
             // 沪深的用kline
-           // "https://push2his.eastmoney.com/api/qt/stock/kline/get?cb="+jquery+"&secid=0."+code+"&ut=fa5fd1943c7b386f172d6893dbfba10b&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&beg=0&end=20500101&lmt=120&_="+System.currentTimeMillis();
+            "https://push2his.eastmoney.com/api/qt/stock/kline/get?cb="+jquery+"&secid=0."+code+"&ut=fa5fd1943c7b386f172d6893dbfba10b&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&beg=0&end=20500101&lmt=120&_="+System.currentTimeMillis();
            // 深沪的用fflow/daykine
 
-            "https://push2his.eastmoney.com/api/qt/stock/fflow/daykline/get?cb=jQuery112307239334035396534_1776256055892&lmt=0&klt=101&fields1=f1%2Cf2%2Cf3%2Cf7&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf62%2Cf63%2Cf64%2Cf65&ut=b2884a393a59ad64002292a3e90d46a5&secid=0."+code+"&_="+System.currentTimeMillis();
+           // "https://push2his.eastmoney.com/api/qt/stock/fflow/daykline/get?cb=jQuery112307239334035396534_1776256055892&lmt=0&klt=101&fields1=f1%2Cf2%2Cf3%2Cf7&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf62%2Cf63%2Cf64%2Cf65&ut=b2884a393a59ad64002292a3e90d46a5&secid=0."+code+"&_="+System.currentTimeMillis();
 
             //  https://push2his.eastmoney.com/api/qt/stock/fflow/daykline/get?cb=jQuery1123035767427159617116_1776223308768&lmt=0&klt=101&fields1=f1%2Cf2%2Cf3%2Cf7&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf62%2Cf63%2Cf64%2Cf65&ut=b2884a393a59ad64002292a3e90d46a5&secid=0.301629&_=1776223308769
 
@@ -318,8 +316,8 @@ public class CompanyHistoryService extends ServiceImpl<CompanyHistoryMapper, Com
             if (Objects.isNull(klineDataAll) || klineDataAll.toString().equals("null")){
                 urlString =
                         //   "https://push2his.eastmoney.com/api/qt/stock/kline/get?cb=jQuery35103458189631037627_1715506453184&secid=1.600665&ut=fa5fd1943c7b386f172d6893dbfba10b&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&end=20500101&lmt=120&_=1715506453297";
-                     //   "https://push2his.eastmoney.com/api/qt/stock/kline/get?cb="+jquery+"&secid=1."+code+"&ut=fa5fd1943c7b386f172d6893dbfba10b&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&beg=0&end=20500101&lmt=120&_="+System.currentTimeMillis();
-                "https://push2his.eastmoney.com/api/qt/stock/fflow/daykline/get?cb=jQuery112307239334035396534_1776256055892&lmt=0&klt=101&fields1=f1%2Cf2%2Cf3%2Cf7&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf62%2Cf63%2Cf64%2Cf65&ut=b2884a393a59ad64002292a3e90d46a5&secid=1."+code+"&_="+System.currentTimeMillis();
+                        "https://push2his.eastmoney.com/api/qt/stock/kline/get?cb="+jquery+"&secid=1."+code+"&ut=fa5fd1943c7b386f172d6893dbfba10b&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&beg=0&end=20500101&lmt=120&_="+System.currentTimeMillis();
+               // "https://push2his.eastmoney.com/api/qt/stock/fflow/daykline/get?cb=jQuery112307239334035396534_1776256055892&lmt=0&klt=101&fields1=f1%2Cf2%2Cf3%2Cf7&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf62%2Cf63%2Cf64%2Cf65&ut=b2884a393a59ad64002292a3e90d46a5&secid=1."+code+"&_="+System.currentTimeMillis();
 
                 url = new URL(urlString);
                 // 打开连接
@@ -360,7 +358,7 @@ public class CompanyHistoryService extends ServiceImpl<CompanyHistoryMapper, Com
                 String s = String.valueOf(o);
 
                 String[] split = s.split(",");
-                if (!TimeUtilsZ.checkTime(split[0])){
+                if (!TimeUtilsZ.checkTime(split[0]) || !DateCompare.dateCompare(split[0])){
                     continue;
                 }
 
@@ -423,7 +421,8 @@ https://push2his.eastmoney.com/api/qt/stock/kline/get?cb=jQuery35108797847003193
             StringBuilder sb = new StringBuilder();
             for(Object o:objects){
                 JSONObject jsonObject1 = JSONUtil.parseObj(o);
-                if ("5".equals(jsonObject1.get("f292").toString())){
+                //2 交易中 5已经收盘 6停牌
+                if ("2".equals(jsonObject1.get("f292").toString())){
                     sb.append(jsonObject1.get("f12")).append(",");
                 }
             }
@@ -522,6 +521,8 @@ https://push2his.eastmoney.com/api/qt/stock/kline/get?cb=jQuery35108797847003193
         queryWrapper.select("distinct COMPANY_CODE");
         this.list(queryWrapper);
     }
+
+
 
 
 

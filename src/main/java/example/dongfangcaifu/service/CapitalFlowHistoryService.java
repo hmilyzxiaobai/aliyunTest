@@ -255,7 +255,6 @@ public class CapitalFlowHistoryService extends ServiceImpl<CapitalFlowHistoryMap
             // 打开连接
             HttpURLConnection connection = httpUrlUtils.httpBuildUrlUtils(url,code, HttpRefererEnum.HUDATA);
             // 设置请求方法为GET
-            connection.setRequestMethod("GET");
             // 获取响应内容
             BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             StringBuilder response = new StringBuilder();
@@ -315,14 +314,6 @@ public class CapitalFlowHistoryService extends ServiceImpl<CapitalFlowHistoryMap
                 if (!TimeUtilsZ.checkTime(split[0])){
                     continue;
                 }
-//
-//                CompanyHistoryEntity companyHistory = new CompanyHistoryEntity();
-//                companyHistory.setPrice(split[11]);
-//                companyHistory.setDateHis(split[0]);
-//                companyHistory.setCompanyCode(codeH);
-//                companyHistory.setCompanyName(name);
-//                companyHistory.setChangeDetails(split[12]);
-//                saveInfoList.add(companyHistory);
                 CapitalFlowHistoryEntity capitalFlowHistoryEntity = new CapitalFlowHistoryEntity();
                 capitalFlowHistoryEntity.setCapital(split[1]);
                 capitalFlowHistoryEntity.setCompanyCode(codeH);
@@ -332,8 +323,6 @@ public class CapitalFlowHistoryService extends ServiceImpl<CapitalFlowHistoryMap
                 capitalFlowHistoryEntity.setProportion(split[6]);
                 saveList.add(capitalFlowHistoryEntity);
             }
-
-
         }catch (Exception e){
             e.printStackTrace();
         }

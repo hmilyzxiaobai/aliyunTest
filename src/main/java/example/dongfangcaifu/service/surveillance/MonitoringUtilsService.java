@@ -72,7 +72,7 @@ public class MonitoringUtilsService {
             // 打开连接
             HttpURLConnection connection = httpUrlUtils.httpBuildUrlUtils(url,code, HttpRefererEnum.HUDATA);
             // 设置请求方法为GET
-            connection.setRequestMethod("GET");
+
             // 获取响应内容
             BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             StringBuilder response = new StringBuilder();
@@ -172,5 +172,18 @@ public class MonitoringUtilsService {
         }
     }
 
+    public int monitorMacdExcelData(String code, String companyName,String price) {
+        Float nowPrice = readNowData(code);
+        if (nowPrice==0){
+            return 3;
+        }
+        if (FloatUtils.stringToFloat(price)<nowPrice){
+            log.info("当前为涨，当前股票代码为{}，公司名字为{}，昨天的价格为{}，此时的价格为{}",code,companyName,price,nowPrice);
+            return 1;
+        }else {
+            log.info("当前为跌，当前股票代码为{}，公司名字为{}，昨天的价格为{}，此时的价格为{}",code,companyName,price,nowPrice);
+            return 2;
+        }
+    }
 }
 
