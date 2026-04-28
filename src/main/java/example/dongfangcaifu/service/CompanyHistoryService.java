@@ -6,7 +6,6 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import example.dongfangcaifu.httpUtils.HttpRefererEnum;
@@ -21,9 +20,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.NumberFormat;
@@ -254,7 +255,8 @@ public class CompanyHistoryService extends ServiceImpl<CompanyHistoryMapper, Com
         List<CompanyHistoryEntity> saveList = new ArrayList<>();
 
         List<CompanyHistoryEntity> entityList = writeOne(code, jquery);
-        if (!checkData(entityList)){
+        //if (!checkData(entityList)){
+        if (CollectionUtils.isEmpty(entityList)){
             log.info("股票代码："+code+"导入失败");
             return false;
         }
@@ -366,9 +368,12 @@ public class CompanyHistoryService extends ServiceImpl<CompanyHistoryMapper, Com
                 companyHistory.setCompanyCode(code);
                 companyHistory.setDateHis(split[0]);
                 companyHistory.setPrice(split[2]);
-                companyHistory.setChangeDetails(split[9]);
+                companyHistory.setChangeDetails(split[8]);
                 companyHistory.setCompanyName(name);
-
+             //   2026-04-22,3.92,3.88,3.92,3.86,764654,296503187.09,1.54,-0.51,-0.02,0.79"
+                companyHistory.setTradingVolume(split[5]);
+                companyHistory.setVolumeOfTransaction(split[6]);
+                companyHistory.setTurnoverRate(split[10]);
                 saveList.add(companyHistory);
                 //System.out.println(s);
             }
@@ -393,7 +398,7 @@ https://push2his.eastmoney.com/api/qt/stock/kline/get?cb=jQuery35108797847003193
         try {
             String urlString =
                     // 沪深 板块不同 所以只用改一个就行
-           // "https://push2.eastmoney.com/api/qt/clist/get?np=1&fltt=1&invt=2&cb=jQuery37107591229855109933_1776222019251&fs=b%3ABK0707&fields=f12%2Cf13%2Cf14%2Cf1%2Cf2%2Cf4%2Cf3%2Cf152%2Cf5%2Cf6%2Cf7%2Cf15%2Cf18%2Cf16%2Cf17%2Cf10%2Cf8%2Cf9%2Cf23%2Cf26&fid=f26&pn="+page+"&pz="+size+"po=1&dect=1&ut=fa5fd1943c7b386f172d6893dbfba10b&wbp2u=9250355984212214%7C0%7C1%7C0%7Cweb&_=1776222019258";
+           // "https://push2.eastmoney.com/api/qt/clist/get?np=1&fltt=1&invt=2&cb=jQuery37107591229855109933_1776222019251&fs=b%3ABK0707&fields=f12%2Cf13%2Cf14%2Cf1%2Cf2%2Cf4%2Cf3%2Cf152%2Cf5%2Cf6%2Cf7%2Cf15%2Cf18%2Cf16%2Cf17%2Cf10%2Cf8%2Cf9%2Cf23%2Cf26%2Cf292&fid=f26&pn="+page+"&pz="+size+"po=1&dect=1&ut=fa5fd1943c7b386f172d6893dbfba10b&wbp2u=9250355984212214%7C0%7C1%7C0%7Cweb&_=1776222019258";
                     // 深沪
             "https://push2.eastmoney.com/api/qt/clist/get?np=1&fltt=1&invt=2&cb=jQuery37107591229855109933_1776222019251&fs=b%3ABK0804&fields=f12%2Cf13%2Cf14%2Cf1%2Cf2%2Cf4%2Cf3%2Cf152%2Cf5%2Cf6%2Cf7%2Cf15%2Cf18%2Cf16%2Cf17%2Cf10%2Cf8%2Cf9%2Cf23%2Cf26%2Cf292&fid=f26&pn="+page+"&pz="+size+"po=1&dect=1&ut=fa5fd1943c7b386f172d6893dbfba10b&wbp2u=9250355984212214%7C0%7C1%7C0%7Cweb&_=1776222019258";
 
@@ -422,7 +427,7 @@ https://push2his.eastmoney.com/api/qt/stock/kline/get?cb=jQuery35108797847003193
             for(Object o:objects){
                 JSONObject jsonObject1 = JSONUtil.parseObj(o);
                 //2 交易中 5已经收盘 6停牌
-                if ("2".equals(jsonObject1.get("f292").toString())){
+                if ("5".equals(jsonObject1.get("f292").toString())){
                     sb.append(jsonObject1.get("f12")).append(",");
                 }
             }
@@ -523,9 +528,72 @@ https://push2his.eastmoney.com/api/qt/stock/kline/get?cb=jQuery35108797847003193
     }
 
 
+//  AI分界线
 
 
+    public List<CompanyHistoryEntity> getByCompanyCode(String companyCode) {
+        LambdaQueryWrapper<CompanyHistoryEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CompanyHistoryEntity::getCompanyCode, companyCode);
+        wrapper.eq(CompanyHistoryEntity::getIsDeleted, 0);
+        wrapper.orderByDesc(CompanyHistoryEntity::getDateHis);
+        return this.list(wrapper);
+    }
+    public Map<String, String> getCompanyStats(String companyCode) {
+        List<CompanyHistoryEntity> list = this.getByCompanyCode(companyCode);
+        if (list.isEmpty()) {
+            return Collections.emptyMap();
+        }
 
+        BigDecimal maxPrice = BigDecimal.ZERO;
+        BigDecimal minPrice = BigDecimal.valueOf(Double.MAX_VALUE);
+        BigDecimal sumPrice = BigDecimal.ZERO;
+
+        for (CompanyHistoryEntity entity : list) {
+            if (StringUtils.hasText(entity.getPrice())) {
+                try {
+                    BigDecimal price = new BigDecimal(entity.getPrice());
+                    maxPrice = maxPrice.max(price);
+                    minPrice = minPrice.min(price);
+                    sumPrice = sumPrice.add(price);
+                } catch (NumberFormatException e) {
+                    // 忽略格式错误
+                }
+            }
+        }
+
+        Map<String, String> stats = new HashMap<>();
+        stats.put("maxPrice", maxPrice.toString());
+        stats.put("minPrice", minPrice.toString());
+        stats.put("avgPrice", sumPrice.divide(BigDecimal.valueOf(list.size()), 2, BigDecimal.ROUND_HALF_UP).toString());
+        stats.put("recordCount", String.valueOf(list.size()));
+        return stats;
+    }
+
+    public List<Map<String, Object>> getPriceTrend(String companyCode, int days) {
+        LambdaQueryWrapper<CompanyHistoryEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CompanyHistoryEntity::getCompanyCode, companyCode);
+        wrapper.eq(CompanyHistoryEntity::getIsDeleted, 0);
+        wrapper.orderByAsc(CompanyHistoryEntity::getDateHis);
+        wrapper.last("LIMIT " + days);
+
+        List<CompanyHistoryEntity> list = this.list(wrapper);
+        return list.stream().map(item -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("date", item.getDateHis());
+            map.put("price", item.getPrice());
+            map.put("changeDetails", item.getChangeDetails());
+            return map;
+        }).collect(Collectors.toList());
+    }
+
+    public CompanyHistoryEntity getLatest(String companyCode) {
+        LambdaQueryWrapper<CompanyHistoryEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CompanyHistoryEntity::getCompanyCode, companyCode);
+        wrapper.eq(CompanyHistoryEntity::getIsDeleted, 0);
+        wrapper.orderByDesc(CompanyHistoryEntity::getDateHis);
+        wrapper.last("LIMIT 1");
+        return this.getOne(wrapper);
+    }
 }
 
 

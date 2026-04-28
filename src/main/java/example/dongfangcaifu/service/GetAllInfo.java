@@ -11,6 +11,7 @@ import example.dongfangcaifu.service.email.EmailService;
 import example.dongfangcaifu.src.entity.CompanyInfoEntity;
 import example.dongfangcaifu.src.entity.FinancialInfoDmEntity;
 import example.dongfangcaifu.utils.DealPrice;
+import example.dongfangcaifu.utils.FloatUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -82,7 +83,7 @@ public class GetAllInfo {
         dm.setStartPrice(todayOpen);
         dm.setLowPrice(todayLow);
         dm.setYesterdayPrice(yesterdayClose);
-        dm.setEarnings(earn);
+        dm.setEarnings(String.valueOf(FloatUtils.stringToFloat(earn)/100));
         dm.setTopAmount(earnAmount);
         dm.setNowPrice(nowPrice);
         dm.setDf(df);

@@ -45,7 +45,7 @@ public class GetNowAndSend {
 
     private static Set<FinancialInfoDmEntity> savesCodeDfList = new HashSet<>();
     static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-
+    static boolean conFlag=true;
     @Autowired
     private SendHisService sendHisService;
     @Autowired
@@ -69,12 +69,10 @@ public class GetNowAndSend {
 
     @Autowired
     private HttpUrlUtils httpUrlUtils;
-    public synchronized void saveComInfo() {
+    public synchronized void saveComInfo(int page,int size,String code) {
         // 查询的uuid
-        String uuid = "PASSWORD";
-        String page="1";
-        String size = "1";
         int total = 0;
+        int index=0;
         try {
             // 设置要发送请求的URL
             String urlString =
@@ -95,9 +93,6 @@ public class GetNowAndSend {
             // 输出响应内容
             // System.out.println("响应内容：");
             String dataAll = response.toString();
-//            dataAll=dataAll.replace(uuid,"");
-//            dataAll=dataAll.replaceAll("\\(","");
-//            dataAll=dataAll.replaceAll("\\);","");
 
             String[] splitOne = dataAll.split("\\(");
             String[] splitTwo = splitOne[1].split("\\)");
@@ -106,50 +101,48 @@ public class GetNowAndSend {
             JSON parse = JSONUtil.parse(dataAll);
             JSONObject jsonObject= JSONUtil.parseObj( parse.getByPath("data"));
             total = Integer.parseInt(jsonObject.get("total").toString());
+            dataAll = jsonObject.get("diff").toString();
+            System.out.println(dataAll);
+            JSONArray objects = JSONUtil.parseArray(dataAll);
+            StringBuilder sb = new StringBuilder();
+            for(int i=0;i<objects.size();i++){
+                Object o = objects.get(i);
+                JSONObject one = JSONUtil.parseObj(o);
+                sb.append(one.get("f12").toString()).append(",");
+            }
+            index = Math.max(index,Arrays.asList(sb.toString().split(",")).indexOf(code));
+
             connection.disconnect();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        insertEntityInfo(total);
-    }
-    private  void insertEntityInfo(Integer total){
-        int size = 40;
-        int page =1;
-        String uuid = getUUID();
-        for (int index = 0;index<total;){
-            index=page*size;
-            digui(uuid,String.valueOf(page),
-                    String.valueOf(size));
-            page++;
-        }
 
+        insertEntityInfo(total,page,size,index);
+    }
+    private  void insertEntityInfo(Integer total,int page,int size,int indexCode){
+        savesCodeDfList.clear();
+        conFlag=true;
+        int index=page*size;
+        for (;index<total;){
+            index=page*size;
+            digui(String.valueOf(page),
+                    String.valueOf(size),indexCode);
+            page++;
+            if (!conFlag){
+                break;
+            }
+        }
         Calendar calendar =  Calendar.getInstance();
         calendar.setTime(new Date());
         calendar.add(Calendar.MINUTE,-3);
         String format = DateUtil.format(calendar.getTime(), "yyyy-MM-dd");
         System.out.println("timestamp = " + format);
-        int index = 0;
-        Map<String,Integer> mapScore = new HashMap<>();
-
-
-        List<List<String>> dataExcel = new ArrayList<>();
-
-        Map<String, String> pressureMap = companyInfoService.getAllPressure();
-
-        Map<String, String> supporeMap = companyInfoService.getAllSupport();
-
-        Map<String,String> messageSupPre = new HashMap<>();
-
-
-
         for(FinancialInfoDmEntity financialInfoDmEntity:savesCodeDfList){
 
         }
-
-
         int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
         System.out.println("当前时间的小时数是: " + hourOfDay);
-        if(hourOfDay>=15     ){
+        if(hourOfDay>=9     ){
             log.info("沪A数据保存成功");
             List<CompanyHistoryEntity> saveHis = new ArrayList<>();
             List<CapitalFlowHistoryEntity> saveHisCap = new ArrayList<>();
@@ -166,7 +159,6 @@ public class GetNowAndSend {
                 companyHistory.setTradingVolume(one.getTradingVolume());
                 companyHistory.setVolumeOfTransaction(one.getVolumeOfTransaction());
                 saveHis.add(companyHistory);
-
                 CapitalFlowHistoryEntity capitalFlowHistoryEntity = new CapitalFlowHistoryEntity();
                 capitalFlowHistoryEntity.setCapital(one.getCapitalNow());
                 capitalFlowHistoryEntity.setCompanyCode(one.getCompanyCode());
@@ -176,6 +168,9 @@ public class GetNowAndSend {
                 capitalFlowHistoryEntity.setProportion(one.getProportion());
                 saveHisCap.add(capitalFlowHistoryEntity);
             }
+            log.info("在递归后执行保存程序，保存的数量为{}",saveHis.size());
+            log.info("沪A数据保存成功，当前页面{}",page);
+
             companyHistoryService.saveBatch(saveHis);
             capitalFlowHistoryService.saveBatch(saveHisCap);
         }
@@ -187,15 +182,15 @@ public class GetNowAndSend {
 
 
 
-    private  void digui(String uuid,String page,String size){
+    private  void digui(String page,String size,int indexCode){
         try {
+            log.info("当前访问的页数为：{}",page);
+            log.info("当前访问的页数为：{}",page);
             // 设置要发送请求的URL
             String urlString =
             //        String.format("https://70.push2.eastmoney.com/api/qt/clist/get?cb=%S&pn=%S&pz=%S&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&wbp2u=|0|0|0|web&fid=f3&fs=m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23,m:0+t:81+s:2048&fields=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f12,f13,f14,f15,f16,f17,f18,f20,f21,f23,f24,f25,f22,f11,f62,f128,f136,f115,f152&_=1714361372410",uuid,page,size);
            // "https://41.push2.eastmoney.com/api/qt/clist/get?cb=jQuery35104660061245692523_"+System.currentTimeMillis()+"&pn="+page+"&pz="+size+"&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&dect=1&wbp2u=|0|0|0|web&fid=f26&fs=b:BK0707&fields=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f12,f13,f14,f15,f16,f17,f18,f20,f21,f23,f24,f25,f26,f22,f11,f62,f128,f136,f115,f152&_="+System.currentTimeMillis()
                     "https://push2.eastmoney.com/api/qt/clist/get?np=1&fltt=1&invt=2&cb=jQuery37107591229855109933_1776222019251&fs=b%3ABK0707&fields=f12%2Cf13%2Cf14%2Cf1%2Cf2%2Cf4%2Cf3%2Cf152%2Cf5%2Cf6%2Cf7%2Cf15%2Cf18%2Cf16%2Cf17%2Cf10%2Cf8%2Cf9%2Cf23%2Cf26&fid=f26&pn="+page+"&pz="+size+"po=1&dect=1&ut=fa5fd1943c7b386f172d6893dbfba10b&wbp2u=9250355984212214%7C0%7C1%7C0%7Cweb&_=1776222019258";
-
-
             URL url = new URL(urlString);
             // 打开连接
             HttpURLConnection connection = httpUrlUtils.httpBuildUrlUtils(url, HttpRefererEnum.CODE);
@@ -212,10 +207,6 @@ public class GetNowAndSend {
             // 输出响应内容
             //System.out.println("响应内容：");
             String dataAll = response.toString();
-
-//            dataAll=dataAll.replace(uuid,"");
-//            dataAll=dataAll.replaceAll("\\(","");
-//            dataAll=dataAll.replaceAll("\\);","");
             String[] splitOne = dataAll.split("\\(");
             String[] splitTwo = splitOne[1].split("\\)");
             dataAll = splitTwo[0];
@@ -225,8 +216,10 @@ public class GetNowAndSend {
             dataAll = jsonObject.get("diff").toString();
             System.out.println(dataAll);
             JSONArray objects = JSONUtil.parseArray(dataAll);
-            for(int i=0;i<objects.size();i++){
-                Object o = objects.get(i);
+            connection.disconnect();
+            for( ;indexCode<objects.size();indexCode++){
+
+                Object o = objects.get(indexCode);
                 JSONObject jsonObject1 = JSONUtil.parseObj(o);
                 String 最新价格 = DealPrice.dealPrice(jsonObject1.get("f2",String.class));
                 String 板块 = jsonObject1.get("f13",String.class);  // 0 深A  1 沪A
@@ -244,18 +237,19 @@ public class GetNowAndSend {
                 String 上市时间  = jsonObject1.get("f26",String.class);
                 String 公司名字  = jsonObject1.get("f14",String.class);
                 String 公司代码  = jsonObject1.get("f12",String.class);
-
+                if (!conFlag){
+                    log.info("当前页数：{}，当前代码{}",page,公司代码);
+                    return;
+                }
                 // 保存实时信息
                 addSaveCodeDfList(公司代码,公司名字,今天开,
                         当日最低,昨天收,涨跌幅,涨跌额,
                         最新价格,当日最高,换手率,成交量,成交额);
-
-
             }
             // 关闭连接
-            connection.disconnect();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.info("当前页面{}",page);
+            //e.printStackTrace();
         }
     }
     private synchronized void addSaveCodeDfList(String code,String name
@@ -271,14 +265,17 @@ public class GetNowAndSend {
         dm.setStartPrice(todayOpen);
         dm.setLowPrice(todayLow);
         dm.setYesterdayPrice(yesterdayClose);
-        dm.setEarnings(earn);
+        dm.setEarnings(String.valueOf(FloatUtils.stringToFloat(earn)/100));
         dm.setTopAmount(earnAmount);
         dm.setNowPrice(nowPrice);
         dm.setTopIncrease(top);
-        dm.setTurnoverRate(turnoverRate);
+        dm.setTurnoverRate(String.valueOf(FloatUtils.stringToFloat(turnoverRate)/100));
         dm.setVolumeOfTransaction(volumeOfTransaction);
         dm.setTradingVolume(tradingVolume);
-       // getCapitalNow(code,dm);
+        getCapitalNow(code,dm);
+        if (!conFlag){
+            return;
+        }
         savesCodeDfList.add(dm);
     }
 
@@ -307,8 +304,7 @@ public class GetNowAndSend {
                 response.append(inputLine);
             }
             in.close();
-            // 输出响应内容
-            // System.out.println("响应内容：");
+
             String dataAll = response.toString();
             String[] splitOne = dataAll.split("\\(");
             String[] splitTwo = splitOne[1].split("\\)");
@@ -343,7 +339,6 @@ public class GetNowAndSend {
                 splitTwo = splitOne[1].split("\\)");
                 data = splitTwo[0];
                 System.out.println(data);
-
                 JSONObject jsonObjectNew = JSONUtil.parseObj(data);
                 capitalNow = jsonObjectNew.get("data");
             }
@@ -357,7 +352,8 @@ public class GetNowAndSend {
             }
         }catch (Exception e){
             e.printStackTrace();
-            throw new RuntimeException();
+            conFlag=false;
+           // throw new RuntimeException();
         }
     }
 

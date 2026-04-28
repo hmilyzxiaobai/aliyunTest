@@ -37,6 +37,9 @@ public class TestController {
 
 
     @GetMapping("test")
+    public String ceshiHsk(){
+        return "hello 测试成功";
+    }
     public String test() {
         StringBuilder sb = new StringBuilder();
 
@@ -118,7 +121,7 @@ public class TestController {
 
     @GetMapping("test/shen")
     public void testShen(){
-        getNowAndSendShenA.saveComInfo();
+      //  getNowAndSendShenA.saveComInfo();
     }
 
     @Autowired

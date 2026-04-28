@@ -36,11 +36,14 @@ public class MonitoringUtilsService {
             String s = companyHistoryService.readThreeInfo(code);
             //直接报警
             if (capitalNow > 5000000) {
+                log.info("\n当前资金流入清空为：{}",capitalNow);
                 log.info("\n股票名称：{}股票代码：{}，当前价格为：{}，达到触底并且流入资金大于500W，请重点关注板块问题，请查看并关注资金流入情况,历史信息为：{}", companyName, code, priceNow,s);
             }
             if (flag) {
+                log.info("当前资金流入清空为：{}",capitalNow);
                 log.info("\n股票名称：{}股票代码：{}，当前价格为：{}，低于预期值，并在上涨中了，请查看,历史信息为：{}", companyName, code, priceNow,s);
             } else {
+                log.info("当前资金流入清空为：{}",capitalNow);
                 log.info("\n股票名称：{}股票代码：{}，当前价格为：{}，低于预期值，正在进行触底，请查看,历史信息为：{}", companyName, code, priceNow,s);
             }
         } else {
@@ -52,8 +55,10 @@ public class MonitoringUtilsService {
                 }
 //
                 if (capitalNow > 10000000) {
+                    log.info("当前资金流入清空为：{}",capitalNow);
                     log.info("\n股票名称：{}股票代码：{}，当前价格为：{}，达到触底的百分之5，并且流入资金大于1000W，请重点关注板块问题，请查看并关注资金流入情况,历史信息为：{}", companyName, code,priceNow, s);
                 } else
+                    log.info("当前资金流入清空为：{}",capitalNow);
                     log.info("\n股票名称：{}股票代码：{}，当前价格为：{}，达到触底的百分之5，请查看并关注资金流入情况,历史信息为：{}", companyName, code, priceNow,s);
             }
         }

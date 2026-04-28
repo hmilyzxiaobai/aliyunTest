@@ -13,6 +13,7 @@ import lombok.*;
 @TableName("monitoring")
 public class MonitoringEntity {
 
+    private Long id;
     /** 公司名字 */
     private String companyName;
 

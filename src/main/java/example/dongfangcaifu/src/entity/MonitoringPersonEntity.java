@@ -29,11 +29,6 @@ public class MonitoringPersonEntity {
     @TableField("news_text")
     private String newsText;
 
-    @TableField(value = "create_time", fill = FieldFill.INSERT)
-    private LocalDateTime createTime;
-
-    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updateTime;
 
     @TableField("is_deleted")
     @TableLogic

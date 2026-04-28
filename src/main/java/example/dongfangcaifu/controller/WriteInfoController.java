@@ -89,11 +89,19 @@ public class WriteInfoController {
     /**
      * 调试
      */
-    @GetMapping("send/email")
-    public void sendEmail(){
-        log.info("执行推送邮箱");
-        getNowAndSend.saveComInfo();
-        getNowAndSendShenA.saveComInfo();;
+    @GetMapping("send/email/sh")
+    public void sendEmail(@RequestParam(value = "page") int page,
+                          @RequestParam(value = "size")int size,
+                          @RequestParam(value = "code")String code){
+        log.info("保存上海主板");
+        getNowAndSend.saveComInfo(page,size,code);
+    }
+    @GetMapping("send/email/sz")
+    public void sendEmailShen(@RequestParam(value = "page") int page,
+                          @RequestParam(value = "size")int size,
+                          @RequestParam(value = "code")String code){
+        log.info("保存深圳主板");
+        getNowAndSendShenA.saveComInfo(page,size,code);;
     }
 
 
@@ -102,13 +110,13 @@ public class WriteInfoController {
     public void surveillanceLow(){
         log.info("监控低点");
 
-        getNowAndSend.saveComInfo();
+    //    getNowAndSend.saveComInfo();
     }
 
     @GetMapping("surveillance/stock/high")
     public void surveillanceHigh(){
         log.info("监控高点");
-        getNowAndSend.saveComInfo();
+    //    getNowAndSend.saveComInfo();
     }
 
     @GetMapping("gou/list")
@@ -174,7 +182,7 @@ public class WriteInfoController {
     public String getPageData(@RequestParam(value = "page") int page,
                               @RequestParam(value = "size")String size,
                               @RequestParam(value = "code")String code){
-        for(;page<=34;page++){
+        for(;page<=36;page++){
             String pageData = companyHistoryService.getPageData(String.valueOf(page), size);
             String[] split = pageData.split(",");
             int index = 0;
@@ -200,7 +208,7 @@ public class WriteInfoController {
     public String rebuildPage(@RequestParam(value = "page") int page
     ,@RequestParam(value = "jquery") String jquery,@RequestParam(value = "cul") String cul
             ,@RequestParam(value = "ignoreCode") String ignoreCode){
-        for(;page<=34;page++){
+        for(;page<=36;page++){
             String pageData = companyHistoryService.getPageData(String.valueOf(page), "50");
             String[] split = pageData.split(",");
             int index=0;
@@ -215,7 +223,7 @@ public class WriteInfoController {
                 if (str.equals(ignoreCode)){
                     continue;
                 }
-                log.info("当前刷取股票代码为："+str);
+                log.info("当前刷取股票代码为：{}，页数为{}",str,page);
 
                 boolean flag = capitalFlowHistoryService.reConvertData(str, jquery,cul);
 

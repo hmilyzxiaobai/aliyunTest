@@ -45,8 +45,9 @@
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
-            <version>4.1.4</version>
+            <version>4.30.0</version>  <!-- 升级到最新版本 -->
         </dependency>
+
 
         <dependency>
             <groupId>com.google.guava</groupId>

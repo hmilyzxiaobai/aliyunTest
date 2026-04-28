@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>股票监控系统 - 监控数据</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+        * { margin: 0; padding: 0; }
+        body { background-color: #f0f2f6; font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', sans-serif; overflow-x: hidden; }
+        .app-layout { display: flex; min-height: 100vh; }
+        .sidebar { width: 240px; background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); color: white; position: fixed; left: 0; top: 0; bottom: 0; overflow-y: auto; z-index: 100; box-shadow: 2px 0 12px rgba(0,0,0,0.1); }
+        .sidebar-logo { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+        .sidebar-logo h2 { font-size: 20px; font-weight: 600; }
+        .sidebar-logo span { color: #00d4ff; }
+        .sidebar-logo p { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 8px; }
+        .nav-menu { padding: 0 12px; }
+        .nav-item { display: flex; align-items: center; padding: 12px 16px; margin-bottom: 8px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; color: rgba(255,255,255,0.8); }
+        .nav-item i { font-size: 18px; margin-right: 12px; width: 24px; text-align: center; }
+        .nav-item span { font-size: 14px; }
+        .nav-item:hover { background-color: rgba(255,255,255,0.1); color: white; }
+        .nav-item.active { background: linear-gradient(135deg, #00d4ff, #409eff); color: white; box-shadow: 0 4px 12px rgba(0,212,255,0.3); }
+        .main-content { flex: 1; margin-left: 240px; min-height: 100vh; }
+        .navbar { background: white; padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 12px rgba(0,0,0,0.08); position: sticky; top: 0; z-index: 99; }
+        .navbar-title { font-size: 18px; font-weight: 500; color: #1a1a2e; }
+        .navbar-title span { color: #409eff; }
+        .container { padding: 20px; }
+        .filter-card { margin-bottom: 20px; border-radius: 12px; }
+        .table-card { border-radius: 12px; overflow: hidden; }
+        .price-up { color: #f56c6c; font-weight: bold; }
+        .price-down { color: #67c23a; font-weight: bold; }
+        .macd-positive { color: #f56c6c; }
+        .macd-negative { color: #67c23a; }
+        .signal-golden { background-color: #fff7e6; color: #e6a23c; padding: 2px 8px; border-radius: 4px; font-size: 12px; display: inline-block; }
+        .signal-death { background-color: #fef0f0; color: #f56c6c; padding: 2px 8px; border-radius: 4px; font-size: 12px; display: inline-block; }
+        .signal-bull { color: #f56c6c; }
+        .signal-bear { color: #67c23a; }
+        .threshold-value { cursor: pointer; padding: 4px 8px; border-radius: 4px; background-color: #f5f7fa; display: inline-block; }
+        .threshold-value:hover { background-color: #e6f7ff; color: #409eff; }
+        .ai-preview { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; color: #409eff; }
+        .ai-preview:hover { color: #66b1ff; }
+        .status-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; }
+        .status-buy { background: #fdf6ec; color: #e6a23c; }
+        .status-sell { background: #fef0f0; color: #f56c6c; }
+        .status-hold { background: #e8f4e8; color: #67c23a; }
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 4px; }
+        @media (max-width: 768px) { .sidebar { width: 70px; } .sidebar-logo h2, .sidebar-logo p, .nav-item span { display: none; } .nav-item i { margin-right: 0; } .main-content { margin-left: 70px; } }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="app-layout">
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <h2>📊 <span>Stock</span></h2>
+                <p>股票监控系统</p>
+            </div>
+            <div class="nav-menu">
+                <div class="nav-item" :class="{ active: currentPage === 'monitor' }" @click="goToMonitor">
+                    <i class="el-icon-data-line"></i>
+                    <span>监控数据</span>
+                </div>
+                <div class="nav-item" :class="{ active: currentPage === 'limitUpDown' }" @click="goToLimitUpDown">
+                    <i class="el-icon-trend-charts"></i>
+                    <span>大涨大跌</span>
+                </div>
+                <div class="nav-item" @click="goToPage('macd')">
+                    <i class="el-icon-coin"></i>
+                    <span>MACD分析</span>
+                </div>
+                <div class="nav-item" @click="goToPage('capital')">
+                    <i class="el-icon-money"></i>
+                    <span>资金流向</span>
+                </div>
+                <div class="nav-item" @click="goToPage('plate')">
+                    <i class="el-icon-pie-chart"></i>
+                    <span>板块统计</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div v-show="currentPage === 'monitor'">
+                <div class="navbar">
+                    <div class="navbar-title">📋 <span>监控数据</span> | 自选股票实时监控</div>
+                    <el-button type="text" @click="refreshData" :loading="loading" style="color: #409eff;">🔄 刷新数据</el-button>
+                </div>
+
+                <div class="container">
+                    <el-card class="filter-card" shadow="hover">
+                        <div slot="header"><span>🔍 数据筛选</span></div>
+                        <el-form :inline="true" :model="searchForm" size="medium">
+                            <el-form-item label="股票名称">
+                                <el-input v-model="searchForm.companyName" placeholder="请输入股票名称" clearable style="width: 200px"></el-input>
+                            </el-form-item>
+                            <el-form-item label="股票代码">
+                                <el-input v-model="searchForm.companyCode" placeholder="请输入股票代码" clearable style="width: 150px"></el-input>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-button type="primary" icon="el-icon-search" @click="handleSearch">查询</el-button>
+                                <el-button icon="el-icon-refresh-right" @click="resetSearch">重置</el-button>
+                                <el-button type="success" icon="el-icon-plus" @click="handleAdd">新增监控</el-button>
+                            </el-form-item>
+                        </el-form>
+                    </el-card>
+
+                    <el-card class="table-card" shadow="hover">
+                        <div slot="header">
+                            <span>📋 监控股票列表</span>
+                            <span style="margin-left: 16px; font-size: 12px; color: #909399;">共 {{ total }} 条记录</span>
+                            <el-button v-if="selectedRows.length > 0" type="danger" size="small" icon="el-icon-delete" style="float: right" @click="handleBatchDelete">批量删除 ({{ selectedRows.length }})</el-button>
+                        </div>
+
+                        <el-table :data="tableData" border stripe v-loading="loading" @selection-change="handleSelectionChange" style="width: 100%">
+                            <el-table-column type="selection" width="50" align="center"></el-table-column>
+                            <el-table-column prop="companyName" label="股票名称" min-width="120">
+                                <template slot-scope="scope"><span style="font-weight: 600">{{ scope.row.companyName }}</span></template>
+                            </el-table-column>
+                            <el-table-column prop="companyCode" label="股票代码" width="110" align="center"></el-table-column>
+                            <el-table-column label="购买阈值" width="120" align="center">
+                                <template slot-scope="scope">
+                                    <span class="threshold-value" @click="editThreshold(scope.row, 'buy')">¥ {{ scope.row.monitoringPrice || '未设置' }}</span>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="卖出阈值" width="120" align="center">
+                                <template slot-scope="scope">
+                                    <span class="threshold-value" @click="editThreshold(scope.row, 'sell')">¥ {{ scope.row.monitoringSellPrice || '未设置' }}</span>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="最新价格" width="100" align="center">
+                                <template slot-scope="scope">
+                                    <span :class="scope.row.changePercent >= 0 ? 'price-up' : 'price-down'">¥ {{ scope.row.latestPrice || '-' }}</span>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="当日涨幅" width="100" align="center">
+                                <template slot-scope="scope">
+                                    <span :class="scope.row.changePercent >= 0 ? 'price-up' : 'price-down'">{{ formatPercent(scope.row.changePercent) }}</span>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="MACD(最近3天)" width="180" align="center">
+                                <template slot-scope="scope">
+                                    <div v-if="scope.row.macdList && scope.row.macdList.length">
+                                        <span v-for="(macd, idx) in scope.row.macdList" :key="idx" :class="parseFloat(macd) >= 0 ? 'macd-positive' : 'macd-negative'" style="font-size: 12px;">{{ idx > 0 ? '→' : '' }}{{ macd }}</span>
+                                    </div>
+                                    <span v-else>-</span>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="MACD信号" width="110" align="center">
+                                <template slot-scope="scope">
+                                    <span v-if="scope.row.macdSignal" :class="getSignalClass(scope.row.macdSignal)">{{ scope.row.macdSignal }}</span>
+                                    <span v-else>-</span>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="AI分析" min-width="200">
+                                <template slot-scope="scope">
+                                    <el-popover placement="top-start" title="AI分析详情" width="350" trigger="hover" :content="scope.row.aiText || '暂无分析'">
+                                        <div slot="reference" class="ai-preview">🤖 {{ truncateText(scope.row.aiText, 20) || '暂无分析' }}</div>
+                                    </el-popover>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="AI新闻" min-width="200">
+                                <template slot-scope="scope">
+                                    <el-popover placement="top-start" title="新闻详情" width="350" trigger="hover" :content="scope.row.newsText || '暂无新闻'">
+                                        <div slot="reference" class="ai-preview">📰 {{ truncateText(scope.row.newsText, 20) || '暂无新闻' }}</div>
+                                    </el-popover>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="操作建议" width="100" align="center">
+                                <template slot-scope="scope">
+                                    <span :class="'status-badge ' + getSuggestionClass(scope.row)">{{ getSuggestion(scope.row) }}</span>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="操作" width="160" align="center" fixed="right">
+                                <template slot-scope="scope">
+                                    <el-button type="primary" size="small" icon="el-icon-edit" @click="handleEdit(scope.row)">编辑</el-button>
+                                    <el-button type="danger" size="small" icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-button>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+
+                        <div style="margin-top: 20px; text-align: right">
+                            <el-pagination
+                                    @size-change="handleSizeChange"
+                                    @current-change="handleCurrentChange"
+                                    :current-page="pageNum"
+                                    :page-sizes="[5, 10, 20, 50]"
+                                    :page-size="pageSize"
+                                    :total="total"
+                                    layout="total, sizes, prev, pager, next, jumper">
+                            </el-pagination>
+                        </div>
+                    </el-card>
+                </div>
+            </div>
+
+            <div v-show="currentPage === 'limitUpDown'" style="height: 100vh;">
+                <iframe src="limitUpDown.html" style="width: 100%; height: 100%; border: none;"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="550px" :close-on-click-modal="false">
+        <el-form :model="formData" :rules="formRules" ref="formRef" label-width="100px">
+            <el-form-item label="股票名称" prop="companyName" required><el-input v-model="formData.companyName" placeholder="请输入股票名称"></el-input></el-form-item>
+            <el-form-item label="股票代码" prop="companyCode" required><el-input v-model="formData.companyCode" placeholder="请输入股票代码"></el-input></el-form-item>
+            <el-form-item label="购买阈值"><el-input v-model="formData.monitoringPrice" placeholder="请输入购买阈值"><template slot="prepend">¥</template></el-input></el-form-item>
+            <el-form-item label="卖出阈值"><el-input v-model="formData.monitoringSellPrice" placeholder="请输入卖出阈值"><template slot="prepend">¥</template></el-input></el-form-item>
+            <el-form-item label="AI分析"><el-input type="textarea" v-model="formData.aiText" :rows="3" placeholder="请输入AI分析内容"></el-input></el-form-item>
+            <el-form-item label="新闻动向"><el-input type="textarea" v-model="formData.newsText" :rows="2" placeholder="请输入新闻动向"></el-input></el-form-item>
+        </el-form>
+        <div slot="footer"><el-button @click="dialogVisible = false">取消</el-button><el-button type="primary" @click="submitForm" :loading="submitLoading">确定</el-button></div>
+    </el-dialog>
+
+    <el-dialog :title="thresholdType === 'buy' ? '编辑购买阈值' : '编辑卖出阈值'" :visible.sync="thresholdVisible" width="400px">
+        <el-form :model="thresholdForm" label-width="100px">
+            <el-form-item :label="thresholdType === 'buy' ? '购买阈值' : '卖出阈值'"><el-input v-model="thresholdForm.price" placeholder="请输入阈值价格"><template slot="prepend">¥</template></el-input></el-form-item>
+        </el-form>
+        <div slot="footer"><el-button @click="thresholdVisible = false">取消</el-button><el-button type="primary" @click="saveThreshold">保存</el-button></div>
+    </el-dialog>
+</div>
+
+<script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<script>
+    const getBaseUrl = () => {
+        const hostname = window.location.hostname;
+        if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '') {
+            return 'http://localhost:8080';
+        }
+        return 'http://n3c2187007.51vip.biz';
+    };
+
+    const BASE_URL = getBaseUrl();
+    axios.defaults.baseURL = BASE_URL;
+    console.log('🌐 当前环境:', window.location.hostname, '→ 后端地址:', BASE_URL);
+
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                currentPage: 'monitor',
+                loading: false, submitLoading: false,
+                tableData: [], selectedRows: [],
+                pageNum: 1,
+                pageSize: 5,
+                total: 0,
+                searchForm: { companyName: '', companyCode: '' },
+                dialogVisible: false, dialogTitle: '新增监控', isEdit: false,
+                formData: { id: null, companyName: '', companyCode: '', monitoringPrice: '', monitoringSellPrice: '', aiText: '', newsText: '' },
+                formRules: { companyName: [{ required: true, message: '请输入股票名称' }], companyCode: [{ required: true, message: '请输入股票代码' }] },
+                thresholdVisible: false, thresholdForm: { id: null, price: '' }, thresholdType: 'buy'
+            }
+        },
+        mounted() { this.loadData(); },
+        methods: {
+            goToMonitor() { this.currentPage = 'monitor'; this.loadData(); },
+            goToLimitUpDown() { this.currentPage = 'limitUpDown'; },
+            goToPage(page) { this.$message.info(`${page}页面开发中...`); },
+
+            // 获取单只股票的增强数据
+            async enrichStock(item) {
+                let latestPrice = null, changePercent = null;
+                try {
+                    const historyRes = await axios.get(`/api/company-history/latest/${item.companyCode}`);
+                    if (historyRes.data) {
+                        latestPrice = historyRes.data.price;
+                        changePercent = historyRes.data.changeDetails;
+                    }
+                } catch (e) {}
+
+                let macdList = [], macdSignal = null;
+                try {
+                    const macdRes = await axios.get(`/api/macd/history/${item.companyCode}`);
+                    if (macdRes.data && macdRes.data.length) {
+                        const sorted = [...macdRes.data].sort((a, b) => new Date(b.df) - new Date(a.df));
+                        macdList = sorted.slice(0, 3).map(m => m.macd);
+                        if (sorted.length >= 2) {
+                            const today = sorted[0], yesterday = sorted[1];
+                            const todayDif = parseFloat(today.dif), todayDea = parseFloat(today.dea);
+                            const yesterdayDif = parseFloat(yesterday.dif), yesterdayDea = parseFloat(yesterday.dea);
+                            const todayMacd = parseFloat(today.macd);
+                            if (yesterdayDif <= yesterdayDea && todayDif > todayDea) macdSignal = '金叉 ↑';
+                            else if (yesterdayDif >= yesterdayDea && todayDif < todayDea) macdSignal = '死叉 ↓';
+                            else if (todayDif > todayDea && todayMacd > 0) macdSignal = '多头强势';
+                            else if (todayDif > todayDea) macdSignal = '多头趋势';
+                            else if (todayDif < todayDea && todayMacd < 0) macdSignal = '空头弱势';
+                            else if (todayDif < todayDea) macdSignal = '空头趋势';
+                        }
+                    }
+                } catch (e) {}
+                return { ...item, latestPrice, changePercent, macdList, macdSignal };
+            },
+
+            async loadData() {
+                this.loading = true;
+                try {
+                    // 1. 调用分页接口
+                    const params = {
+                        pageNum: this.pageNum,
+                        pageSize: this.pageSize
+                    };
+                    if (this.searchForm.companyName) params.companyName = this.searchForm.companyName;
+                    if (this.searchForm.companyCode) params.companyCode = this.searchForm.companyCode;
+
+                    const res = await axios.get('/api/monitoring-person/page', { params });
+                    console.log('分页响应:', res.data);
+
+                    // 2. 获取分页数据（根据实际返回结构调整）
+                    let records = [];
+                    let totalCount = 0;
+
+                    if (res.data.data) {
+                        // 如果返回格式是 { code, data: { records, total } }
+                        records = res.data.data.records || [];
+                        totalCount = res.data.data.total || 0;
+                    } else if (res.data.records) {
+                        // 如果返回格式是 { records, total }
+                        records = res.data.records || [];
+                        totalCount = res.data.total || 0;
+                    } else if (Array.isArray(res.data)) {
+                        // 如果直接返回数组
+                        records = res.data;
+                        totalCount = res.data.length;
+                    } else {
+                        records = [];
+                        totalCount = 0;
+                    }
+
+                    this.total = totalCount;
+
+                    // 3. 对当前页的数据进行增强（价格、MACD）
+                    const enrichedData = await Promise.all(records.map(item => this.enrichStock(item)));
+                    this.tableData = enrichedData;
+
+                    console.log(`加载完成: 第${this.pageNum}页, 共${this.total}条, 当前页${this.tableData.length}条`);
+
+                } catch (error) {
+                    console.error('加载失败:', error);
+                    console.error('错误详情:', error.response?.data);
+                    this.$message.error(error.response?.data?.message || '加载数据失败');
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            getSignalClass(signal) {
+                if (signal && signal.includes('金叉')) return 'signal-golden';
+                if (signal && signal.includes('死叉')) return 'signal-death';
+                if (signal && signal.includes('多头')) return 'signal-bull';
+                if (signal && signal.includes('空头')) return 'signal-bear';
+                return '';
+            },
+
+            refreshData() { this.loadData(); this.$message.success('已刷新'); },
+            handleSearch() { this.pageNum = 1; this.loadData(); },
+            resetSearch() { this.searchForm = { companyName: '', companyCode: '' }; this.pageNum = 1; this.loadData(); },
+            handleSelectionChange(val) { this.selectedRows = val; },
+            handleSizeChange(val) {
+                this.pageSize = val;
+                this.pageNum = 1;
+                this.loadData();
+            },
+            handleCurrentChange(val) {
+                this.pageNum = val;
+                this.loadData();
+            },
+            handleAdd() { this.dialogTitle = '新增监控'; this.isEdit = false; this.formData = { id: null, companyName: '', companyCode: '', monitoringPrice: '', monitoringSellPrice: '', aiText: '', newsText: '' }; this.dialogVisible = true; },
+
+            async handleEdit(row) {
+                this.dialogTitle = '编辑监控'; this.isEdit = true;
+                try {
+                    const res = await axios.get(`/api/monitoring-person/${row.id}`);
+                    if (res.data) this.formData = { ...res.data };
+                    else this.formData = { ...row };
+                } catch (error) {
+                    this.formData = { ...row };
+                }
+                this.dialogVisible = true;
+            },
+
+            editThreshold(row, type) {
+                this.thresholdType = type;
+                this.thresholdForm = { id: row.id, price: type === 'buy' ? row.monitoringPrice : row.monitoringSellPrice };
+                this.thresholdVisible = true;
+            },
+
+            async saveThreshold() {
+                try {
+                    const updateData = { id: this.thresholdForm.id };
+                    if (this.thresholdType === 'buy') updateData.monitoringPrice = this.thresholdForm.price;
+                    else updateData.monitoringSellPrice = this.thresholdForm.price;
+                    const res = await axios.put('/api/monitoring-person/update', updateData);
+                    if (res.data) {
+                        this.$message.success('更新成功');
+                        this.thresholdVisible = false;
+                        this.loadData();
+                    } else this.$message.error('更新失败');
+                } catch (error) {
+                    this.$message.error('保存失败');
+                }
+            },
+
+            async submitForm() {
+                this.$refs.formRef.validate(async (valid) => {
+                    if (!valid) return;
+                    this.submitLoading = true;
+                    try {
+                        let success = false;
+                        if (this.isEdit) {
+                            const res = await axios.put('/api/monitoring-person/update', this.formData);
+                            success = res.data;
+                        } else {
+                            const res = await axios.post('/api/monitoring-person/add', this.formData);
+                            success = res.data.success;
+                        }
+                        if (success) {
+                            this.$message.success(this.isEdit ? '更新成功' : '新增成功');
+                            this.dialogVisible = false;
+                            this.loadData();
+                        } else this.$message.error('操作失败');
+                    } catch (error) {
+                        this.$message.error('操作失败');
+                    } finally {
+                        this.submitLoading = false;
+                    }
+                });
+            },
+
+            async handleDelete(row) {
+                try {
+                    await this.$confirm(`确定删除 "${row.companyName}" 吗？`, '提示', { type: 'warning' });
+                    const res = await axios.delete(`/api/monitoring-person/${row.id}`);
+                    if (res.data) {
+                        this.$message.success('删除成功');
+                        this.loadData();
+                    } else this.$message.error('删除失败');
+                } catch (error) {
+                    if (error !== 'cancel') this.$message.error('删除失败');
+                }
+            },
+
+            async handleBatchDelete() {
+                if (this.selectedRows.length === 0) {
+                    this.$message.warning('请选择要删除的数据');
+                    return;
+                }
+                try {
+                    await this.$confirm(`确定删除选中的 ${this.selectedRows.length} 条数据吗？`, '提示', { type: 'warning' });
+                    const ids = this.selectedRows.map(row => row.id);
+                    const res = await axios.delete('/api/monitoring-person/batch', { data: ids });
+                    if (res.data) {
+                        this.$message.success('批量删除成功');
+                        this.loadData();
+                    } else this.$message.error('批量删除失败');
+                } catch (error) {
+                    if (error !== 'cancel') this.$message.error('批量删除失败');
+                }
+            },
+
+            getSuggestion(row) {
+                if (!row.latestPrice) return '等待数据';
+                const price = parseFloat(row.latestPrice);
+                const buy = parseFloat(row.monitoringPrice);
+                const sell = parseFloat(row.monitoringSellPrice);
+                if (buy && price <= buy) return '建议买入';
+                if (sell && price >= sell) return '建议卖出';
+                return '持有观望';
+            },
+
+            getSuggestionClass(row) {
+                const s = this.getSuggestion(row);
+                if (s === '建议买入') return 'status-buy';
+                if (s === '建议卖出') return 'status-sell';
+                return 'status-hold';
+            },
+
+            formatPercent(v) {
+                if (v === undefined || v === null) return '-';
+                const n = parseFloat(v);
+                return isNaN(n) ? '-' : (n > 0 ? '+' : '') + n + '%';
+            },
+
+            truncateText(t, l) {
+                if (!t) return '';
+                return t.length > l ? t.substring(0, l) + '...' : t;
+            }
+        }
+    });
+</script>
+</body>
+</html>

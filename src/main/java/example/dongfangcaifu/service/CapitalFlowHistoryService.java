@@ -237,8 +237,9 @@ public class CapitalFlowHistoryService extends ServiceImpl<CapitalFlowHistoryMap
             return true;
         }
         List<CapitalFlowHistoryEntity> entityList = reWriteHis(code, jquery,cul);
-        if (!checkData(entityList)){
-            log.info("股票代码："+code+"导入失败");
+        //if (!checkData(entityList)){
+        if (org.springframework.util.CollectionUtils.isEmpty(entityList)){
+            log.info("股票代码：{}导入失败", code);
             return false;
         }
         this.saveBatch(entityList);

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大涨大跌统计</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+        * { margin: 0; padding: 0; }
+        body { background-color: #f0f2f6; font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+
+        .page-header {
+            background: white;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e4e7ed;
+            margin-bottom: 20px;
+        }
+
+        .page-header h2 {
+            font-size: 20px;
+            color: #1a1a2e;
+        }
+
+        .page-header h2 span {
+            color: #409eff;
+        }
+
+        .container { padding: 0 20px; }
+
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+
+        .stat-card:hover { transform: translateY(-4px); }
+        .stat-card.up { border-top: 4px solid #f56c6c; }
+        .stat-card.down { border-top: 4px solid #67c23a; }
+        .stat-card.large { border-top: 4px solid #e6a23c; }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .stat-card.up .stat-number { color: #f56c6c; }
+        .stat-card.down .stat-number { color: #67c23a; }
+        .stat-card.large .stat-number { color: #e6a23c; }
+
+        .stat-label { color: #909399; font-size: 14px; }
+
+        .filter-bar {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .date-picker { width: 260px; }
+
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            overflow-x: auto;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        .table-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e4e7ed;
+            font-weight: 600;
+        }
+
+        .limit-up { color: #f56c6c; font-weight: bold; }
+        .limit-down { color: #67c23a; font-weight: bold; }
+
+        .type-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .type-badge.type-1 { background: #fef0f0; color: #f56c6c; }
+        .type-badge.type-2 { background: #fff7e6; color: #e6a23c; }
+        .type-badge.type-3 { background: #f0f9f0; color: #67c23a; }
+        .type-badge.type-4 { background: #f4f4f5; color: #909399; }
+        .type-badge.type-5 { background: #e6f7ff; color: #409eff; }
+        .type-badge.type-6 { background: #f9f0ff; color: #9b59b6; }
+
+        .stat-card.active {
+            box-shadow: 0 4px 16px rgba(64,158,255,0.3);
+            transform: scale(1.02);
+        }
+
+        .text-up { color: #f56c6c; }
+        .text-down { color: #67c23a; }
+
+        .macd-positive { color: #f56c6c; }
+        .macd-negative { color: #67c23a; }
+
+        .current-price {
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="page-header">
+        <h2>📈 <span>大涨大跌</span> | 涨停跌停统计</h2>
+    </div>
+
+    <div class="container">
+        <!-- 统计卡片 -->
+        <div class="stats-cards">
+            <div class="stat-card up" :class="{ active: filterType === 1 }" @click="setFilterType(1)">
+                <div class="stat-label">沪A涨停</div>
+                <div class="stat-number">{{ stats.shUp || 0 }}</div>
+                <div class="stat-label">10% 涨停</div>
+            </div>
+            <div class="stat-card up" :class="{ active: filterType === 2 }" @click="setFilterType(2)">
+                <div class="stat-label">深A涨停</div>
+                <div class="stat-number">{{ stats.szUp || 0 }}</div>
+                <div class="stat-label">20% 涨停</div>
+            </div>
+            <div class="stat-card large" :class="{ active: filterType === 5 }" @click="setFilterType(5)">
+                <div class="stat-label">深A大涨</div>
+                <div class="stat-number">{{ stats.szLargeUp || 0 }}</div>
+                <div class="stat-label">12.5%~16%</div>
+            </div>
+            <div class="stat-card down" :class="{ active: filterType === 3 }" @click="setFilterType(3)">
+                <div class="stat-label">沪A跌停</div>
+                <div class="stat-number">{{ stats.shDown || 0 }}</div>
+                <div class="stat-label">-10% 跌停</div>
+            </div>
+            <div class="stat-card down" :class="{ active: filterType === 4 }" @click="setFilterType(4)">
+                <div class="stat-label">深A跌停</div>
+                <div class="stat-number">{{ stats.szDown || 0 }}</div>
+                <div class="stat-label">-20% 跌停</div>
+            </div>
+            <div class="stat-card large" :class="{ active: filterType === 6 }" @click="setFilterType(6)">
+                <div class="stat-label">深A大跌</div>
+                <div class="stat-number">{{ stats.szLargeDown || 0 }}</div>
+                <div class="stat-label">-16%~-10.5%</div>
+            </div>
+        </div>
+
+        <!-- 筛选栏 -->
+        <div class="filter-bar">
+            <el-date-picker
+                    v-model="dateRange"
+                    type="daterange"
+                    range-separator="至"
+                    start-placeholder="开始日期"
+                    end-placeholder="结束日期"
+                    class="date-picker"
+                    value-format="yyyy-MM-dd">
+            </el-date-picker>
+            <el-select v-model="filterType" placeholder="全部类型" clearable style="width: 140px" @change="onTypeChange">
+                <el-option label="沪A涨停" :value="1"></el-option>
+                <el-option label="深A涨停" :value="2"></el-option>
+                <el-option label="沪A跌停" :value="3"></el-option>
+                <el-option label="深A跌停" :value="4"></el-option>
+                <el-option label="深A大涨" :value="5"></el-option>
+                <el-option label="深A大跌" :value="6"></el-option>
+            </el-select>
+            <el-button type="primary" icon="el-icon-search" @click="loadData" :loading="loading">查询</el-button>
+            <el-button icon="el-icon-refresh-right" @click="resetFilter">重置</el-button>
+        </div>
+
+        <!-- 数据表格 -->
+        <div class="table-card">
+            <div class="table-header">
+                <span>📋 大涨大跌股票列表</span>
+                <span style="margin-left: 16px; font-size: 12px; color: #909399;">共 {{ total }} 条记录</span>
+            </div>
+            <el-table :data="tableData" border stripe v-loading="loading" style="width: 100%">
+                <!-- 展开行 -->
+                <el-table-column type="expand">
+                    <template slot-scope="scope">
+                        <div style="padding: 12px; background: #fafafa;">
+                            <h4 style="margin-bottom: 12px;">📊 MACD技术指标（最近3天）</h4>
+                            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                                <thead>
+                                <tr>
+                                    <th style="text-align: left; padding: 8px; background: #e8f4f8;">日期</th>
+                                    <th style="text-align: left; padding: 8px; background: #e8f4f8;">价格</th>
+                                    <th style="text-align: left; padding: 8px; background: #e8f4f8;">DIF</th>
+                                    <th style="text-align: left; padding: 8px; background: #e8f4f8;">DEA</th>
+                                    <th style="text-align: left; padding: 8px; background: #e8f4f8;">MACD</th>
+                                    <th style="text-align: left; padding: 8px; background: #e8f4f8;">趋势</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr v-for="(item, idx) in scope.row.macdData" :key="idx">
+                                    <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;">{{ item.df }}</td>
+                                    <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;">¥ {{ item.price }}</td>
+                                    <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;" :class="parseFloat(item.dif) >= 0 ? 'text-up' : 'text-down'">{{ item.dif }}</td>
+                                    <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;" :class="parseFloat(item.dea) >= 0 ? 'text-up' : 'text-down'">{{ item.dea }}</td>
+                                    <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;" :class="parseFloat(item.macd) >= 0 ? 'macd-positive' : 'macd-negative'">{{ item.macd }}</td>
+                                    <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;">
+                                        <span v-if="idx === 0" :class="getSignalClass(item.dif, item.dea)">{{ getSignal(item.dif, item.dea) }}</span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <div v-if="!scope.row.macdData || scope.row.macdData.length === 0" style="text-align: center; padding: 20px; color: #909399;">
+                                暂无MACD数据
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+
+                <el-table-column prop="companyName" label="股票名称" min-width="120">
+                    <template slot-scope="scope">
+                        <span style="font-weight: 600">{{ scope.row.companyName }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="companyCode" label="股票代码" width="120" align="center"></el-table-column>
+
+                <!-- 当前价格 -->
+                <el-table-column label="当前价格" width="100" align="center">
+                    <template slot-scope="scope">
+                            <span v-if="scope.row.macdData && scope.row.macdData.length" class="current-price" :class="getPriceClass(scope.row)">
+                                ¥ {{ scope.row.macdData[0].price }}
+                            </span>
+                        <span v-else style="color: #909399;">-</span>
+                    </template>
+                </el-table-column>
+
+                <!-- 最近3天价格变动 -->
+                <el-table-column label="最近3天价格" width="180" align="center">
+                    <template slot-scope="scope">
+                        <div v-if="scope.row.macdData && scope.row.macdData.length">
+                                <span v-for="(item, idx) in scope.row.macdData" :key="idx" style="margin-right: 8px;">
+                                    <span :class="idx === 0 ? 'limit-up' : ''">{{ item.price }}</span>
+                                    <span v-if="idx < scope.row.macdData.length - 1" style="color: #909399;">→</span>
+                                </span>
+                        </div>
+                        <span v-else>-</span>
+                    </template>
+                </el-table-column>
+
+                <el-table-column prop="changeDetails" label="当日涨幅" width="100" align="center">
+                    <template slot-scope="scope">
+                            <span :class="parseFloat(scope.row.changeDetails) > 0 ? 'text-up' : 'text-down'">
+                                {{ formatPercent(scope.row.changeDetails) }}
+                            </span>
+                    </template>
+                </el-table-column>
+
+                <!-- 最近3天DIF -->
+                <el-table-column label="最近3天DIF" width="180" align="center">
+                    <template slot-scope="scope">
+                        <div v-if="scope.row.macdData && scope.row.macdData.length">
+                                <span v-for="(item, idx) in scope.row.macdData" :key="idx" style="margin-right: 8px;">
+                                    <span :class="parseFloat(item.dif) >= 0 ? 'text-up' : 'text-down'">{{ item.dif }}</span>
+                                    <span v-if="idx < scope.row.macdData.length - 1" style="color: #909399;">→</span>
+                                </span>
+                        </div>
+                        <span v-else>-</span>
+                    </template>
+                </el-table-column>
+
+                <!-- 最近3天DEA -->
+                <el-table-column label="最近3天DEA" width="180" align="center">
+                    <template slot-scope="scope">
+                        <div v-if="scope.row.macdData && scope.row.macdData.length">
+                                <span v-for="(item, idx) in scope.row.macdData" :key="idx" style="margin-right: 8px;">
+                                    <span :class="parseFloat(item.dea) >= 0 ? 'text-up' : 'text-down'">{{ item.dea }}</span>
+                                    <span v-if="idx < scope.row.macdData.length - 1" style="color: #909399;">→</span>
+                                </span>
+                        </div>
+                        <span v-else>-</span>
+                    </template>
+                </el-table-column>
+
+                <!-- 最近3天MACD -->
+                <el-table-column label="最近3天MACD" width="180" align="center">
+                    <template slot-scope="scope">
+                        <div v-if="scope.row.macdData && scope.row.macdData.length">
+                                <span v-for="(item, idx) in scope.row.macdData" :key="idx" style="margin-right: 8px;">
+                                    <span :class="parseFloat(item.macd) >= 0 ? 'macd-positive' : 'macd-negative'">{{ item.macd }}</span>
+                                    <span v-if="idx < scope.row.macdData.length - 1" style="color: #909399;">→</span>
+                                </span>
+                        </div>
+                        <span v-else>-</span>
+                    </template>
+                </el-table-column>
+
+                <el-table-column label="MACD信号" width="100" align="center">
+                    <template slot-scope="scope">
+                            <span v-if="scope.row.macdData && scope.row.macdData.length >= 2"
+                                  :class="getSignalClass(scope.row.macdData[0].dif, scope.row.macdData[0].dea)">
+                                {{ getSignal(scope.row.macdData[0].dif, scope.row.macdData[0].dea) }}
+                            </span>
+                        <span v-else>-</span>
+                    </template>
+                </el-table-column>
+
+                <el-table-column prop="type" label="类型" width="100" align="center">
+                    <template slot-scope="scope">
+                        <span :class="'type-badge type-' + scope.row.type">{{ getTypeName(scope.row.type) }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="dateHis" label="日期" width="120" align="center"></el-table-column>
+            </el-table>
+            <div style="padding: 16px 20px; text-align: right">
+                <el-pagination
+                        @size-change="handleSizeChange"
+                        @current-change="handleCurrentChange"
+                        :current-page="pageNum"
+                        :page-sizes="[10, 20, 50]"
+                        :page-size="pageSize"
+                        :total="total"
+                        layout="total, sizes, prev, pager, next, jumper">
+                </el-pagination>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<script>
+    // 自动判断后端地址
+    const getBaseUrl = () => {
+        const hostname = window.location.hostname;
+        // 本地访问
+        if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '') {
+            return 'http://localhost:8080';
+        }
+        // 外网访问
+        return 'http://n3c2187007.51vip.biz';
+    };
+
+    const BASE_URL = getBaseUrl();
+    axios.defaults.baseURL = BASE_URL;
+    console.log('🌐 当前环境:', window.location.hostname, '→ 后端地址:', BASE_URL);
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                loading: false,
+                tableData: [],
+                pageNum: 1,
+                pageSize: 10,
+                total: 0,
+                dateRange: [],
+                filterType: null,
+                stats: {
+                    shUp: 0, szUp: 0, shDown: 0, szDown: 0, szLargeUp: 0, szLargeDown: 0
+                }
+            }
+        },
+        mounted() {
+            this.initDateRange();
+            this.loadData();
+        },
+        methods: {
+            initDateRange() {
+                const end = new Date();
+                const start = new Date();
+                start.setDate(start.getDate() - 7);
+                this.dateRange = [this.formatDate(start), this.formatDate(end)];
+            },
+            formatDate(date) {
+                return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            },
+            async loadData() {
+                this.loading = true;
+                try {
+                    const params = {
+                        pageNum: this.pageNum,
+                        pageSize: this.pageSize,
+                        startDate: this.dateRange[0] || '',
+                        endDate: this.dateRange[1] || '',
+                        type: this.filterType || ''
+                    };
+
+                    const res = await axios.get('/monitoring/limit-up-down', { params });
+
+                    if (res.data) {
+                        this.tableData = res.data.records || [];
+                        this.total = res.data.total || 0;
+
+                        if (res.data.stats) {
+                            this.stats = res.data.stats;
+                        }
+
+                        // 批量获取MACD数据
+                        if (this.tableData.length > 0) {
+                            await this.loadMacdData();
+                        }
+                    }
+                } catch (error) {
+                    console.error('加载失败:', error);
+                    this.$message.error('加载数据失败');
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            // 批量获取MACD数据
+            async loadMacdData() {
+                const companyCodes = this.tableData.map(item => item.companyCode);
+                try {
+                    // 使用你修改后的接口路径
+                    const res = await axios.post('/api/macd/batch-macd', companyCodes, {
+                        params: { days: 3 }
+                    });
+
+                    // 将MACD数据合并到表格数据中
+                    this.tableData = this.tableData.map(item => {
+                        const macdData = res.data[item.companyCode] || [];
+                        return { ...item, macdData };
+                    });
+                } catch (error) {
+                    console.error('获取MACD数据失败:', error);
+                }
+            },
+
+            // 获取价格样式类
+            getPriceClass(row) {
+                if (!row.macdData || row.macdData.length === 0) return '';
+                const changeDetails = parseFloat(row.changeDetails);
+                return changeDetails > 0 ? 'text-up' : (changeDetails < 0 ? 'text-down' : '');
+            },
+
+            setFilterType(type) {
+                this.filterType = this.filterType === type ? null : type;
+                this.pageNum = 1;
+                this.loadData();
+            },
+            onTypeChange() { this.pageNum = 1; this.loadData(); },
+            resetFilter() { this.initDateRange(); this.filterType = null; this.pageNum = 1; this.loadData(); this.$message.success('已重置'); },
+            handleSizeChange(val) { this.pageSize = val; this.pageNum = 1; this.loadData(); },
+            handleCurrentChange(val) { this.pageNum = val; this.loadData(); },
+            formatPercent(v) { if (!v) return '-'; const n = parseFloat(v); return isNaN(n) ? v : (n > 0 ? '+' : '') + n + '%'; },
+            getTypeName(type) {
+                const map = { 1: '沪A涨停', 2: '深A涨停', 3: '沪A跌停', 4: '深A跌停', 5: '深A大涨', 6: '深A大跌' };
+                return map[type] || '未知';
+            },
+            getSignal(dif, dea) {
+                const d = parseFloat(dif);
+                const e = parseFloat(dea);
+                if (d > e) return '金叉 ↑';
+                if (d < e) return '死叉 ↓';
+                return '震荡';
+            },
+            getSignalClass(dif, dea) {
+                const d = parseFloat(dif);
+                const e = parseFloat(dea);
+                if (d > e) return 'text-up';
+                if (d < e) return 'text-down';
+                return '';
+            }
+        }
+    });
+</script>
+</body>
+</html>

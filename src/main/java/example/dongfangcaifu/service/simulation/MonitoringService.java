@@ -4,12 +4,14 @@ package example.dongfangcaifu.service.simulation;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import example.dongfangcaifu.mapper.MonitoringMapper;
+import example.dongfangcaifu.src.dto.LimitUpDownDTO;
 import example.dongfangcaifu.src.entity.MonitoringEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -50,15 +52,69 @@ public class MonitoringService extends ServiceImpl<MonitoringMapper, MonitoringE
 
     }
 
-    // 分析深A
-    private void analysisShen(){
-        //
+    public LimitUpDownDTO getLimitUpDownList(String startDate, String endDate, Integer type, Integer pageNum, Integer pageSize) {
+        LimitUpDownDTO result = new LimitUpDownDTO();
+
+        // 计算偏移量
+        int offset = (pageNum - 1) * pageSize;
+
+        // 查询列表数据
+        List<MonitoringEntity> list = baseMapper.selectLimitUpDownList(startDate, endDate, type, offset, pageSize);
+
+        // 转换为DTO并设置类型名称
+        List<LimitUpDownDTO.MonitoringRecordDTO> records = new ArrayList<>();
+        for (MonitoringEntity entity : list) {
+            LimitUpDownDTO.MonitoringRecordDTO dto = new LimitUpDownDTO.MonitoringRecordDTO();
+            dto.setId(entity.getId());
+            dto.setCompanyName(entity.getCompanyName());
+            dto.setCompanyCode(entity.getCompanyCode());
+            dto.setPrice(entity.getPrice());
+            dto.setChangeDetails(entity.getChangeDetails());
+            dto.setDateHis(entity.getDateHis());
+            dto.setType(Integer.parseInt(entity.getType()));
+            dto.setTypeName(getTypeName(Integer.parseInt(entity.getType())));
+            records.add(dto);
+        }
+
+        // 查询总数
+        Long total = baseMapper.selectCount(startDate, endDate, type);
+
+        // 查询统计数据
+        Map<String, Object> statsMap = baseMapper.selectStats(startDate, endDate);
+
+        // 组装统计数据
+        LimitUpDownDTO.StatsDTO stats = new LimitUpDownDTO.StatsDTO();
+        stats.setShUp(getIntValue(statsMap, "sh_up"));
+        stats.setSzUp(getIntValue(statsMap, "sz_up"));
+        stats.setShDown(getIntValue(statsMap, "sh_down"));
+        stats.setSzDown(getIntValue(statsMap, "sz_down"));
+        stats.setSzLargeUp(getIntValue(statsMap, "sz_large_up"));
+        stats.setSzLargeDown(getIntValue(statsMap, "sz_large_down"));
+        result.setStats(stats);
+        result.setRecords(records);
+        result.setTotal(total);
+
+        return result;
     }
-
-
+    private Integer getIntValue(Map<String, Object> map, String key) {
+        Integer value = Integer.parseInt(map.get(key).toString());
+        return value != null ? value : 0;
+    }
     /**
-     * 大涨  大跌，但是近期是平盘居多，换手率前三天5以上
+     * 根据类型code获取类型名称
      */
+    private String getTypeName(Integer type) {
+        if (type == null) return "未知";
+        switch (type) {
+            case 1: return "沪A涨停";
+            case 2: return "深A涨停";
+            case 3: return "沪A跌停";
+            case 4: return "深A跌停";
+            case 5: return "深A大涨";
+            case 6: return "深A大跌";
+            default: return "其他";
+        }
+    }
 
 
 

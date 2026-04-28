@@ -219,9 +219,6 @@ public class CompanyCapitalAnalysisHistoryService extends ServiceImpl<CompanyCap
             // 记录深A大涨
             type=5;
             }
-
-
-
             if (-9.5>v&&v>-11){
                 // 记录跌停 沪A
                 type=3;

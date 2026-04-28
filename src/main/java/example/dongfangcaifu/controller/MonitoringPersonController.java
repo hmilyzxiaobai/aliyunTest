@@ -8,12 +8,15 @@ import example.dongfangcaifu.service.MonitoringPersonService;
 import example.dongfangcaifu.src.entity.MonitoringPersonEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/monitoring-person")
+@RequestMapping("api/monitoring-person")
+//@allowedOriginPatterns(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 public class MonitoringPersonController {
 
     @Autowired
@@ -41,6 +44,7 @@ public class MonitoringPersonController {
     /**
      * 分页查询
      */
+   //分页查询
     @GetMapping("/page")
     public IPage<MonitoringPersonEntity> getByPage(
             @RequestParam(defaultValue = "1") int pageNum,

@@ -6,6 +6,8 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import example.dongfangcaifu.httpUtils.HttpRefererEnum;
+import example.dongfangcaifu.httpUtils.HttpUrlUtils;
 import example.dongfangcaifu.src.entity.Plate;
 import example.dongfangcaifu.src.entity.PlateHis;
 import example.dongfangcaifu.utils.DealPrice;
@@ -42,6 +44,8 @@ public class GetGaiNian {
     private PlateHisService plateHisService;
     @Autowired
     private PlateService plateService;
+    @Autowired
+    private HttpUrlUtils httpUrlUtils;
 
     public  void getAll(){
         savePlateList.clear();
@@ -60,7 +64,7 @@ public class GetGaiNian {
 
             URL url = new URL(urlString);
             // 打开连接
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            HttpURLConnection connection = httpUrlUtils.httpBuildUrlUtils(url, HttpRefererEnum.PLATE);
 
             // 获取响应内容
             InputStream inputStream = connection.getInputStream();
@@ -111,14 +115,14 @@ public class GetGaiNian {
             Float v = FloatUtils.stringToFloat(changePercent);
             if(v>300){
                 log.info("该板块出现增长异动，请及时关注，板块为：{}，板块代码为{}，板块涨幅为：{}，涨跌个数分别为{}，{}"
-                        ,plateHis.getConceptName(),plateHis.getConceptCode(),plateHis.getChangePercent(),plateHis.getUpAmount(),plateHis.getDownAmount());
+                        ,plateHis.getConceptName(),plateHis.getConceptCode(),FloatUtils.stringToFloat(plateHis.getChangePercent())/100+"%",plateHis.getUpAmount(),plateHis.getDownAmount());
             }
 
 
         }
         int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
         System.out.println("当前时间的小时数是: " + hourOfDay);
-        if (hourOfDay>15  ){
+        if (hourOfDay>9  ){
             log.info("板块信息保存成功");
             plateHisService.addBatch(savePlateHisList);
             plateService.addBatch(savePlateList);
@@ -203,7 +207,7 @@ public class GetGaiNian {
         plateHis.setPrice(price);
         plateHis.setConceptCode(code);
         plateHis.setConceptName(name);
-        plateHis.setChangePercent(percent);
+        plateHis.setChangePercent(String.valueOf(FloatUtils.stringToFloat(percent)/100));
         plateHis.setAllValue(allValue);
         plateHis.setTurnoverRate(rate);
         plateHis.setChangePrice(changePrice);

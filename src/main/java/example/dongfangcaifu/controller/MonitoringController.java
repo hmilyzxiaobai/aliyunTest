@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import example.dongfangcaifu.service.CompanyCapitalAnalysisHistoryService;
 import example.dongfangcaifu.service.simulation.MonitoringService;
 import example.dongfangcaifu.service.surveillance.MonitoringUtilsService;
+import example.dongfangcaifu.src.dto.LimitUpDownDTO;
 import example.dongfangcaifu.src.entity.MonitoringEntity;
 import example.dongfangcaifu.utils.ExcelReader;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.*;
@@ -66,13 +68,12 @@ public class MonitoringController {
                 case 2:indexDown++;break;
                 case 3:errorRead++;break;
             }
-
         }
         log.info("该数据中总数为{}，涨的个数为{}，跌的个数为{}，读取失败个数为{}",lists.size(),indexUp,indexDown,errorRead);
         return "执行完成";
     }
 
-    @Scheduled(cron = "0 0/15 9-15 * * ?")
+   // @Scheduled(cron = "0 0/15 9-15 * * ?")
     private String monitorExcelDataScheduled(){
         // 拿到excel的数据
         List<List<String>> lists = ExcelReader.printExcelData();
@@ -83,14 +84,6 @@ public class MonitoringController {
         }
         return "执行完成";
     }
-    // 监测三天涨跌停的数据
-
-    @GetMapping("mon")
-    private String monitorExcelYesterday(){
-
-        return "";
-    }
-
 
     @GetMapping("save")
     private String saveData(){
@@ -134,9 +127,21 @@ public class MonitoringController {
     }
 
     /**
-     * 设置连续跌多少天的阈值  平盘为-1---+1  换手率达到3
-     * 设置买入点卖出点，AI问答是否达到拐点
-     * 买点接入AI 根据AI回答的判断是否可买入还是继续增加阈值写回excel
-     * 每天更新excel表，接入飞书
+     * 大涨大跌统计接口
+     * @param startDate 开始日期 yyyy-MM-dd
+     * @param endDate 结束日期 yyyy-MM-dd
+     * @param type 类型：1沪A涨停 2深A涨停 3沪A跌停 4深A跌停 5深A大涨 6深A大跌
+     * @param pageNum 页码
+     * @param pageSize 每页大小
      */
+    @GetMapping("/limit-up-down")
+    public LimitUpDownDTO getLimitUpDownList(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) Integer type,
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        return monitoringService.getLimitUpDownList(startDate, endDate, type, pageNum, pageSize);
+    }
+
 }
