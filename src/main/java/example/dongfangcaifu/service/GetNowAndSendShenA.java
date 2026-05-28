@@ -5,13 +5,11 @@ import cn.hutool.json.JSON;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import example.dongfangcaifu.httpUtils.HttpRefererEnum;
 import example.dongfangcaifu.httpUtils.HttpUrlUtils;
 import example.dongfangcaifu.service.email.EmailService;
-import example.dongfangcaifu.src.entity.CapitalFlowHistoryEntity;
-import example.dongfangcaifu.src.entity.CompanyHistoryEntity;
-import example.dongfangcaifu.src.entity.CompanyInfoEntity;
-import example.dongfangcaifu.src.entity.FinancialInfoDmEntity;
+import example.dongfangcaifu.src.entity.*;
 import example.dongfangcaifu.src.response.CapitalFlowHistoryResponse;
 import example.dongfangcaifu.src.response.GouResponse;
 import example.dongfangcaifu.src.response.JudgeVo;
@@ -19,7 +17,9 @@ import example.dongfangcaifu.utils.DealPrice;
 import example.dongfangcaifu.utils.FloatUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.units.qual.A;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -40,6 +40,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GetNowAndSendShenA {
 
+    @Value("${day.flag}")
+    private String dayFlag;
+
+
     ExecutorService executorService = Executors.newFixedThreadPool(10);  // 创建一个固定大小的线程池
 
     private static List<FinancialInfoDmEntity> savesCodeDfList = new ArrayList<>();
@@ -54,6 +58,8 @@ public class GetNowAndSendShenA {
 
     @Autowired
     private CompanyHistoryService companyHistoryService;
+    @Autowired
+    private CompanyHistoryNowDayService companyHistoryNowDayService;
 
 
     @Autowired
@@ -115,12 +121,12 @@ public class GetNowAndSendShenA {
 
             connection.disconnect();
         } catch (Exception e) {
-           // e.printStackTrace();
+            e.printStackTrace();
         }
         insertEntityInfo(total,page,size,index);
     }
     private  void insertEntityInfo(Integer total,int page,int size,int indexCode){
-
+        int flagpage=page;
         conFlag=true;
         savesCodeDfList.clear();
         int index=page*size;
@@ -140,44 +146,102 @@ public class GetNowAndSendShenA {
         System.out.println("timestamp = " + format);
         int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
         System.out.println("当前时间的小时数是: " + hourOfDay);
+        List<CompanyHistoryNowDayEntity> datList = new ArrayList<>();
 
-        if(hourOfDay>=9  ){
-            List<CompanyHistoryEntity> saveHis = new ArrayList<>();
+        if (dayFlag.equals("1") && hourOfDay<15){
+            // 保存当天临时数据
+            log.info("临时深A数据保存成功");
             List<CapitalFlowHistoryEntity> saveHisCap = new ArrayList<>();
             for(FinancialInfoDmEntity one :savesCodeDfList){
-                CompanyHistoryEntity companyHistory = new CompanyHistoryEntity();
-                companyHistory.setCompanyName(one.getCompanyName());
-                companyHistory.setPrice(one.getNowPrice());
-                companyHistory.setDateHis(format);
-                companyHistory.setCompanyCode(one.getCompanyCode());
-                companyHistory.setChangeDetails(one.getEarnings());
-                companyHistory.setLowPrice(one.getLowPrice());
-                companyHistory.setHighPrice(one.getTopIncrease());
-                companyHistory.setTurnoverRate(one.getTurnoverRate());
-                companyHistory.setTradingVolume(one.getTradingVolume());
-                companyHistory.setVolumeOfTransaction(one.getVolumeOfTransaction());
-                saveHis.add(companyHistory);
-
-                CapitalFlowHistoryEntity capitalFlowHistoryEntity = new CapitalFlowHistoryEntity();
-                capitalFlowHistoryEntity.setCapital(one.getCapitalNow());
-                capitalFlowHistoryEntity.setCompanyCode(one.getCompanyCode());
-                capitalFlowHistoryEntity.setCompanyName(one.getCompanyName());
-                capitalFlowHistoryEntity.setDateHis(format);
-                capitalFlowHistoryEntity.setChangeDetail(one.getEarnings());
-                capitalFlowHistoryEntity.setProportion(one.getProportion());
+                CompanyHistoryNowDayEntity companyHistoryNowDayEntity = getCompanyHistoryNowDayEntity(one, format);
+                datList.add(companyHistoryNowDayEntity);
+                CapitalFlowHistoryEntity capitalFlowHistoryEntity = getCapitalFlowHistoryEntity(one, format);
                 saveHisCap.add(capitalFlowHistoryEntity);
             }
-            log.info("深A数据保存成功，当前页面{}",page);
-            companyHistoryService.saveBatch(saveHis);
+            log.info("临时当天在递归后执行保存程序，保存的数量为{}",datList.size());
+            log.info("临时当天深A数据保存成功，当前页面{}",page);
+            companyHistoryNowDayService.remove(Wrappers.<CompanyHistoryNowDayEntity>lambdaQuery()
+                    .eq(CompanyHistoryNowDayEntity::getDateHis,format));
+            companyHistoryNowDayService.saveBatch(datList);
+            capitalFlowHistoryService.remove(Wrappers.<CapitalFlowHistoryEntity>lambdaQuery()
+                    .eq(CapitalFlowHistoryEntity::getDateHis,format));
             capitalFlowHistoryService.saveBatch(saveHisCap);
+        }else {
+            if (hourOfDay >= 15) {
+                List<CompanyHistoryEntity> saveHis = new ArrayList<>();
+                List<CapitalFlowHistoryEntity> saveHisCap = new ArrayList<>();
+                for (FinancialInfoDmEntity one : savesCodeDfList) {
+                    CompanyHistoryEntity companyHistory = getCompanyHistoryEntity(one, format);
+                    saveHis.add(companyHistory);
+                    CompanyHistoryNowDayEntity companyHistoryNowDayEntity = getCompanyHistoryNowDayEntity(one, format);
+                    datList.add(companyHistoryNowDayEntity);
+                    CapitalFlowHistoryEntity capitalFlowHistoryEntity = getCapitalFlowHistoryEntity(one, format);
+                    saveHisCap.add(capitalFlowHistoryEntity);
+                }
+                log.info("深A数据保存成功，当前页面{}", page);
+                companyHistoryService.saveBatch(saveHis);
 
+                if (flagpage==1){
+                    companyHistoryNowDayService.remove(Wrappers.<CompanyHistoryNowDayEntity>lambdaQuery()
+                            .eq(CompanyHistoryNowDayEntity::getDateHis,format));
+                    capitalFlowHistoryService.remove(Wrappers.<CapitalFlowHistoryEntity>lambdaQuery()
+                            .eq(CapitalFlowHistoryEntity::getDateHis,format));
+
+                }
+                companyHistoryNowDayService.saveBatch(datList);
+
+                capitalFlowHistoryService.saveBatch(saveHisCap);
+
+            }
         }
         /**
          * 执行计算
          */
     }
 
+    @NotNull
+    private static CapitalFlowHistoryEntity getCapitalFlowHistoryEntity(FinancialInfoDmEntity one, String format) {
+        CapitalFlowHistoryEntity capitalFlowHistoryEntity = new CapitalFlowHistoryEntity();
+        capitalFlowHistoryEntity.setCapital(one.getCapitalNow());
+        capitalFlowHistoryEntity.setCompanyCode(one.getCompanyCode());
+        capitalFlowHistoryEntity.setCompanyName(one.getCompanyName());
+        capitalFlowHistoryEntity.setDateHis(format);
+        capitalFlowHistoryEntity.setChangeDetail(one.getEarnings());
+        capitalFlowHistoryEntity.setProportion(one.getProportion());
+        return capitalFlowHistoryEntity;
+    }
 
+    @NotNull
+    private static CompanyHistoryNowDayEntity getCompanyHistoryNowDayEntity(FinancialInfoDmEntity one, String format) {
+        CompanyHistoryNowDayEntity companyHistoryNowDayEntity = new CompanyHistoryNowDayEntity();
+        companyHistoryNowDayEntity.setCompanyName(one.getCompanyName());
+        companyHistoryNowDayEntity.setPrice(one.getNowPrice());
+        companyHistoryNowDayEntity.setDateHis(format);
+        companyHistoryNowDayEntity.setCompanyCode(one.getCompanyCode());
+        companyHistoryNowDayEntity.setChangeDetails(one.getEarnings());
+        companyHistoryNowDayEntity.setLowPrice(one.getLowPrice());
+        companyHistoryNowDayEntity.setHighPrice(one.getTopIncrease());
+        companyHistoryNowDayEntity.setTurnoverRate(one.getTurnoverRate());
+        companyHistoryNowDayEntity.setTradingVolume(one.getTradingVolume());
+        companyHistoryNowDayEntity.setVolumeOfTransaction(one.getVolumeOfTransaction());
+        return companyHistoryNowDayEntity;
+    }
+
+    @NotNull
+    private static CompanyHistoryEntity getCompanyHistoryEntity(FinancialInfoDmEntity one, String format) {
+        CompanyHistoryEntity companyHistory = new CompanyHistoryEntity();
+        companyHistory.setCompanyName(one.getCompanyName());
+        companyHistory.setPrice(one.getNowPrice());
+        companyHistory.setDateHis(format);
+        companyHistory.setCompanyCode(one.getCompanyCode());
+        companyHistory.setChangeDetails(one.getEarnings());
+        companyHistory.setLowPrice(one.getLowPrice());
+        companyHistory.setHighPrice(one.getTopIncrease());
+        companyHistory.setTurnoverRate(one.getTurnoverRate());
+        companyHistory.setTradingVolume(one.getTradingVolume());
+        companyHistory.setVolumeOfTransaction(one.getVolumeOfTransaction());
+        return companyHistory;
+    }
 
 
     private  void digui(String page,String size,int indexCode){
@@ -250,7 +314,7 @@ public class GetNowAndSendShenA {
             conFlag=false;
             log.info("当前页数：{}",page);
 
-           // e.printStackTrace();
+            e.printStackTrace();
         }
     }
     private synchronized void addSaveCodeDfList(String code,String name
@@ -292,7 +356,7 @@ public class GetNowAndSendShenA {
     private void getCapitalNow(String code,FinancialInfoDmEntity financialInfoDmEntity){
         try{
             String urlString =
-                    "https://push2delay.eastmoney.com/api/qt/ulist.np/get?cb=jQuery112304668133973971953_1729232254223&fltt=2&secids=1."+code+"&fields=f62%2Cf184%2Cf66%2Cf69%2Cf72%2Cf75%2Cf78%2Cf81%2Cf84%2Cf87%2Cf64%2Cf65%2Cf70%2Cf71%2Cf76%2Cf77%2Cf82%2Cf83%2Cf164%2Cf166%2Cf168%2Cf170%2Cf172%2Cf252%2Cf253%2Cf254%2Cf255%2Cf256%2Cf124%2Cf6%2Cf278%2Cf279%2Cf280%2Cf281%2Cf282&ut=b2884a393a59ad64002292a3e90d46a5&_=1729232254224";
+                    "https://push2delay.eastmoney.com/api/qt/ulist.np/get?cb=jQuery112304668133973971953_1729232254223&fltt=2&secids=0."+code+"&fields=f62%2Cf184%2Cf66%2Cf69%2Cf72%2Cf75%2Cf78%2Cf81%2Cf84%2Cf87%2Cf64%2Cf65%2Cf70%2Cf71%2Cf76%2Cf77%2Cf82%2Cf83%2Cf164%2Cf166%2Cf168%2Cf170%2Cf172%2Cf252%2Cf253%2Cf254%2Cf255%2Cf256%2Cf124%2Cf6%2Cf278%2Cf279%2Cf280%2Cf281%2Cf282&ut=b2884a393a59ad64002292a3e90d46a5&_=1729232254224";
             URL url = new URL(urlString);
             // 打开连接
             HttpURLConnection connection = httpUrlUtils.httpBuildUrlUtils(url, HttpRefererEnum.HUDATA);
@@ -320,7 +384,7 @@ public class GetNowAndSendShenA {
             if (Objects.isNull(capitalNow) || capitalNow.toString().equals("null")){
                 urlString =
                         //   "https://push2his.eastmoney.com/api/qt/stock/kline/get?cb=jQuery35103458189631037627_1715506453184&secid=1.600665&ut=fa5fd1943c7b386f172d6893dbfba10b&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&end=20500101&lmt=120&_=1715506453297";
-                        "https://push2delay.eastmoney.com/api/qt/ulist.np/get?cb=jQuery112304668133973971953_1729232254223&fltt=2&secids=0."+code+"&fields=f62%2Cf184%2Cf66%2Cf69%2Cf72%2Cf75%2Cf78%2Cf81%2Cf84%2Cf87%2Cf64%2Cf65%2Cf70%2Cf71%2Cf76%2Cf77%2Cf82%2Cf83%2Cf164%2Cf166%2Cf168%2Cf170%2Cf172%2Cf252%2Cf253%2Cf254%2Cf255%2Cf256%2Cf124%2Cf6%2Cf278%2Cf279%2Cf280%2Cf281%2Cf282&ut=b2884a393a59ad64002292a3e90d46a5&_=1729232254224";
+                        "https://push2delay.eastmoney.com/api/qt/ulist.np/get?cb=jQuery112304668133973971953_1729232254223&fltt=2&secids=1."+code+"&fields=f62%2Cf184%2Cf66%2Cf69%2Cf72%2Cf75%2Cf78%2Cf81%2Cf84%2Cf87%2Cf64%2Cf65%2Cf70%2Cf71%2Cf76%2Cf77%2Cf82%2Cf83%2Cf164%2Cf166%2Cf168%2Cf170%2Cf172%2Cf252%2Cf253%2Cf254%2Cf255%2Cf256%2Cf124%2Cf6%2Cf278%2Cf279%2Cf280%2Cf281%2Cf282&ut=b2884a393a59ad64002292a3e90d46a5&_=1729232254224";
 
                 url = new URL(urlString);
                 // 打开连接

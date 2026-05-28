@@ -18,13 +18,21 @@ public class HttpUrlUtils {
     public HttpURLConnection httpBuildUrlUtils(URL url,HttpRefererEnum enumCode){
         HttpURLConnection connection = null;
         try{
-             connection = (HttpURLConnection) url.openConnection();
+            connection = (HttpURLConnection) url.openConnection();
             // 设置请求方法为GET
+//            connection.setRequestProperty("Accept-Language", "zh-CN,zh;q=0.9");
+//            connection.setRequestProperty("Sec-Fetch-Dest", "script");
+//            connection.setRequestProperty("Sec-Fetch-Mode", "no-cors");
+//            connection.setRequestProperty("Sec-Fetch-Site", "same-site");
+//            connection.setRequestProperty("sec-ch-ua", "\"Google Chrome\";v=\"147\", \"Not.A/Brand\";v=\"8\", \"Chromium\";v=\"147\"");
+//            connection.setRequestProperty("sec-ch-ua-mobile", "?0");
+//            connection.setRequestProperty("sec-ch-ua-platform", "\"Windows\"");
             connection.setRequestMethod("GET");
-            connection.setRequestProperty("Accept", "text/event-stream");
+            connection.setRequestProperty("Accept", "*/*");
             connection.setRequestProperty("Cache-Control", "no-cache");
             connection.setRequestProperty("Connection", "keep-alive");
             connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+           // connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36");
             connection.setRequestProperty("Origin", "https://quote.eastmoney.com");
 
             // 此处需要策略 不同的地方的referer不同 暂时不用试试 如果不行就改

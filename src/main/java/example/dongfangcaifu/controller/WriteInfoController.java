@@ -292,7 +292,7 @@ public class WriteInfoController {
         return "成功";
     }
 
-
+    //概念板块
     @Autowired
     private GetGaiNian getGaiNian;
     @GetMapping("get/all/plate")
@@ -300,6 +300,32 @@ public class WriteInfoController {
         getGaiNian.getAll();
         return "成功";
     }
+
+    // 主板
+    @Autowired
+    private ZhubanPlate zhubanPlate;
+    @GetMapping("get/all/zhu/plate")
+    public String getAllZhuban(){
+        zhubanPlate.getAllPlateZhuBan();
+        return "完成";
+    }
+
+    @Autowired
+    private PlateCapitalDetailKlineService plateCapitalDetailKlineService;
+    @GetMapping("get/all/zhu/kline/plate")
+    public String getAllZhubanKline(){
+        plateCapitalDetailKlineService.getAllPlateZhuBanKline();
+        return "获取主板资金k线图信息完成";
+    }
+
+    @Autowired
+    private CompanyCapitalDetailKlineService companyCapitalDetailKlineService;
+    @GetMapping("get/code/kline")
+    public String getCodeKline(@RequestParam Integer index){
+        companyCapitalDetailKlineService.saveDetailKines(index);
+        return "获取个股资金k线图信息完成";
+    }
+
 
 
 

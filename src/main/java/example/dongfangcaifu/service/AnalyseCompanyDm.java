@@ -7,11 +7,14 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import example.dongfangcaifu.httpUtils.HttpRefererEnum;
+import example.dongfangcaifu.httpUtils.HttpUrlUtils;
 import example.dongfangcaifu.src.entity.CompanyInfoEntity;
 import example.dongfangcaifu.utils.ExcelWriter;
 import example.dongfangcaifu.utils.TimeChangeUtils;
 import example.util.UpAnalyse;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.A;
 import org.hibernate.type.IntegerType;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +37,8 @@ public class AnalyseCompanyDm {
     @Autowired
     private CompanyInfoService companyInfoService;
 
+    @Autowired
+    private HttpUrlUtils httpUrlUtils;
     @Autowired
     private GetNewPrice getNewPrice;
     static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd--HHmm");
@@ -73,7 +78,7 @@ public class AnalyseCompanyDm {
     }
 
 
-    @Async
+    //@Async
     private void getToday(Integer typeDm,String name, String code, String type){
         try{
             long l = System.currentTimeMillis();
@@ -130,10 +135,10 @@ public class AnalyseCompanyDm {
     }
 
     @NotNull
-    private static String getString(String urlString, long l) throws IOException {
+    private  String getString(String urlString, long l) throws IOException {
         URL url = new URL(urlString);
         // 打开连接
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        HttpURLConnection connection = httpUrlUtils.httpBuildUrlUtils(url, HttpRefererEnum.CODE);
         // 设置请求方法为GET
         connection.setRequestMethod("GET");
         // 获取响应内容

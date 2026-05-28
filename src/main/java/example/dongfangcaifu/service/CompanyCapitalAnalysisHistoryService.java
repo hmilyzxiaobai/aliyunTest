@@ -95,7 +95,9 @@ public class CompanyCapitalAnalysisHistoryService extends ServiceImpl<CompanyCap
         // 防止有脏数据
         int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
         System.out.println("当前时间的小时数是: " + hourOfDay);
-        if (hourOfDay>=16){
+        // 删除当天数据
+        this.remove(Wrappers.<CompanyCapitalAnalysisHistoryEntity>lambdaQuery().eq(CompanyCapitalAnalysisHistoryEntity::getDateHis,format));
+        if (hourOfDay>=9){
             this.saveBatch(saveList);
         }
     }
