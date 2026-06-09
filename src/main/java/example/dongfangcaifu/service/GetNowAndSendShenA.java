@@ -152,9 +152,14 @@ public class GetNowAndSendShenA {
             // 保存当天临时数据
             log.info("临时深A数据保存成功");
             List<CapitalFlowHistoryEntity> saveHisCap = new ArrayList<>();
+            List<CompanyHistoryEntity> saveHis = new ArrayList<>();
+
             for(FinancialInfoDmEntity one :savesCodeDfList){
                 CompanyHistoryNowDayEntity companyHistoryNowDayEntity = getCompanyHistoryNowDayEntity(one, format);
                 datList.add(companyHistoryNowDayEntity);
+
+                CompanyHistoryEntity companyHistory = getCompanyHistoryEntity(one, format);
+                saveHis.add(companyHistory);
                 CapitalFlowHistoryEntity capitalFlowHistoryEntity = getCapitalFlowHistoryEntity(one, format);
                 saveHisCap.add(capitalFlowHistoryEntity);
             }
@@ -166,6 +171,8 @@ public class GetNowAndSendShenA {
             capitalFlowHistoryService.remove(Wrappers.<CapitalFlowHistoryEntity>lambdaQuery()
                     .eq(CapitalFlowHistoryEntity::getDateHis,format));
             capitalFlowHistoryService.saveBatch(saveHisCap);
+            companyHistoryService.saveBatch(saveHis);
+
         }else {
             if (hourOfDay >= 15) {
                 List<CompanyHistoryEntity> saveHis = new ArrayList<>();
@@ -179,16 +186,18 @@ public class GetNowAndSendShenA {
                     saveHisCap.add(capitalFlowHistoryEntity);
                 }
                 log.info("深A数据保存成功，当前页面{}", page);
-                companyHistoryService.saveBatch(saveHis);
 
                 if (flagpage==1){
                     companyHistoryNowDayService.remove(Wrappers.<CompanyHistoryNowDayEntity>lambdaQuery()
                             .eq(CompanyHistoryNowDayEntity::getDateHis,format));
                     capitalFlowHistoryService.remove(Wrappers.<CapitalFlowHistoryEntity>lambdaQuery()
                             .eq(CapitalFlowHistoryEntity::getDateHis,format));
+                    companyHistoryService.remove(Wrappers.<CompanyHistoryEntity>lambdaQuery()
+                            .eq(CompanyHistoryEntity::getDateHis,format));
 
                 }
                 companyHistoryNowDayService.saveBatch(datList);
+                companyHistoryService.saveBatch(saveHis);
 
                 capitalFlowHistoryService.saveBatch(saveHisCap);
 

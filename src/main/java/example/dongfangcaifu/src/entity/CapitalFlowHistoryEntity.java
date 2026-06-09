@@ -48,4 +48,5 @@ public class CapitalFlowHistoryEntity {
     private String totalCapital;
     private String proportion;
 
+    private String createTime;
 }

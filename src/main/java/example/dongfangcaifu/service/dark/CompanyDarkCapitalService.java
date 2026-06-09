@@ -16,7 +16,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -24,7 +26,7 @@ import java.util.Set;
 public class CompanyDarkCapitalService extends ServiceImpl<CompanyDarkCapitalMapper, CompanyDarkCapitalEntity> {
     // 保存暗盘个股资金
 
-    private static Set<CompanyDarkCapitalEntity> savesCodeDfList = new HashSet<>();
+    static  List<CompanyDarkCapitalEntity> savesCodeDfList = new ArrayList<>();
 
     static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
@@ -74,11 +76,12 @@ public class CompanyDarkCapitalService extends ServiceImpl<CompanyDarkCapitalMap
                     String.valueOf(size),code,df);
             page++;
             if (!conFlag){
+                log.info("保存进度为：{}",index);
                 break;
             }
         }
         log.info("保存暗盘资金结束，保存数据为：{}",savesCodeDfList.size());
-        this.remove(Wrappers.<CompanyDarkCapitalEntity>lambdaQuery().eq(CompanyDarkCapitalEntity::getDateHis,df));
+        this.remove(Wrappers.<CompanyDarkCapitalEntity>lambdaQuery().eq(CompanyDarkCapitalEntity::getDateHis,savesCodeDfList.get(0).getDateHis()));
         this.saveBatch(savesCodeDfList);
     }
 

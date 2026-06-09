@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import example.dongfangcaifu.httpUtils.HttpRefererEnum;
 import example.dongfangcaifu.httpUtils.HttpUrlUtils;
 import example.dongfangcaifu.mapper.CompanyHistoryMapper;
+import example.dongfangcaifu.service.utils.StockUtil;
 import example.dongfangcaifu.src.dto.MeanSum;
 import example.dongfangcaifu.src.entity.*;
 import example.dongfangcaifu.src.response.JudgeVo;
@@ -487,9 +488,35 @@ https://push2his.eastmoney.com/api/qt/stock/kline/get?cb=jQuery35108797847003193
 
 
 
-    public List<CompanyInfoEntity> buSql(){
-        return companyInfoService.getAll();
+    public String rebuildCompanyInfo(){
+        List<CompanyInfoEntity> all = companyInfoService.getAll();
+        List<CompanyHistoryEntity> list = this.list(Wrappers.<CompanyHistoryEntity>lambdaQuery().eq(CompanyHistoryEntity::getDateHis, "2026-06-01"));
+        List<String> biaoji = new ArrayList<>();
+        Set<String> companyInfoSet = all.stream().map(CompanyInfoEntity::getCompanyCode).collect(Collectors.toSet());
+        Map<String,String> mapHis = new HashMap<>();
+        list.forEach(e->mapHis.put(e.getCompanyCode(),e.getCompanyName()));
+        for(CompanyInfoEntity one:all){
+            String companyCode = one.getCompanyCode();
+            if (!mapHis.containsKey(companyCode)){
+                // 不在每天抓取里面标记出来
+                biaoji.add(companyCode);
+            }
+        }
+        log.info("被标记的"+biaoji.toString());
+        List<CompanyInfoEntity> saveList = new ArrayList<>();
+        for(String code:mapHis.keySet()){
+            if (!companyInfoSet.contains(code)){
+                CompanyInfoEntity info = new CompanyInfoEntity();
+                info.setCompanyCode(code);
+                info.setCompanyName(mapHis.get(code));
+                info.setInMarket("是");
+                info.setAppearMarket(StockUtil.getStockMarket(code));
+                saveList.add(info);
+            }
+        }
+        companyInfoService.saveBatch(saveList);
         //return all;
+        return "结束";
     }
 
     public List<CompanyHistoryEntity> getByConceptCode(String conceptCode){

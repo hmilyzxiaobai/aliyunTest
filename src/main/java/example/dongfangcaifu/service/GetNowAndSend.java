@@ -154,19 +154,22 @@ public class GetNowAndSend {
             // 保存当天临时数据
             log.info("临时沪A数据保存成功");
             List<CapitalFlowHistoryEntity> saveHisCap = new ArrayList<>();
+            List<CompanyHistoryEntity> saveHis = new ArrayList<>();
 
             for(FinancialInfoDmEntity one :savesCodeDfList){
-                CompanyHistoryNowDayEntity companyHistory = getCompanyHistoryNowDayEntity(one, format);
-                datList.add(companyHistory);
+                CompanyHistoryNowDayEntity companyNowDayHistory = getCompanyHistoryNowDayEntity(one, format);
+                datList.add(companyNowDayHistory);
+                CompanyHistoryEntity companyHistory = getCompanyHistoryEntity(one, format);
+                saveHis.add(companyHistory);
                 CapitalFlowHistoryEntity capitalFlowHistoryEntity = getCapitalFlowHistoryEntity(one, format);
                 saveHisCap.add(capitalFlowHistoryEntity);
             }
             log.info("临时当天在递归后执行保存程序，保存的数量为{}",datList.size());
             log.info("临时当天沪A数据保存成功，当前页面{}",page);
             companyHistoryNowDayService.saveBatch(datList);
-            capitalFlowHistoryService.remove(Wrappers.<CapitalFlowHistoryEntity>lambdaQuery()
-                    .eq(CapitalFlowHistoryEntity::getDateHis,format));
             capitalFlowHistoryService.saveBatch(saveHisCap);
+            companyHistoryService.saveBatch(saveHis);
+
         }else {
             if(hourOfDay>=9 ){
                 log.info("沪A数据保存成功");
@@ -183,6 +186,7 @@ public class GetNowAndSend {
                 log.info("在递归后执行保存程序，保存的数量为{}",saveHis.size());
                 log.info("沪A数据保存成功，当前页面{}",page);
                 companyHistoryNowDayService.saveBatch(datList);
+
                 companyHistoryService.saveBatch(saveHis);
 //                capitalFlowHistoryService.remove(Wrappers.<CapitalFlowHistoryEntity>lambdaQuery()
 //                        .eq(CapitalFlowHistoryEntity::getDateHis,format));

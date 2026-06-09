@@ -55,4 +55,6 @@ public class PlateCapitalDetailEntity {
     private String littleOrderAmount;
 
     private String littleOrderProportion;
+
+    private String createTime;
 }

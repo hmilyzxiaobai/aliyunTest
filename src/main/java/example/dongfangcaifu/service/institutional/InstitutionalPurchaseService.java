@@ -13,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,13 +22,13 @@ import java.util.List;
 public class InstitutionalPurchaseService extends ServiceImpl<InstitutionalPurchaseMapper,InstitutionalPurchaseEntity> {
     static List<InstitutionalPurchaseEntity> saveList = new ArrayList<>();
 
-    public void saveInstitutional(Integer page,Integer size,String code){
+    public void saveInstitutional(Integer page,Integer size,String code,String dateBe){
         saveList.clear();
-        saveEntity(page,size,code);
+        saveEntity(page,size,code,dateBe);
         log.info("开始保存数据，保存条数为{}，当前页码为{}",saveList.size(),page);
         this.saveBatch(saveList);
     }
-    private void saveEntity(int page,int size,String code){
+    private void saveEntity(int page,int size,String code,String dateBe){
         try {
             //  https://datacenter-web.eastmoney.com/api/data/v1/get?callback=&sortColumns=TRADE_DATE%2CSECURITY_CODE&sortTypes=-1%2C1&pageSize=50&pageNumber=2&             reportName=RPT_OPERATEDEPT_TRADE_DETAILSNEW&columns=ALL&filter=(OPERATEDEPT_CODE%3D%2210634757%22)&source=WEB&client=WEB
             String urlStr="https://datacenter-web.eastmoney.com/api/data/v1/get?callback=&sortColumns=TRADE_DATE%2CSECURITY_CODE&sortTypes=-1%2C1&pageSize="+size+"&pageNumber="+page+"&reportName=RPT_OPERATEDEPT_TRADE_DETAILSNEW&columns=ALL&filter=(OPERATEDEPT_CODE%3D%22"+code+"%22)&source=WEB&client=WEB";
@@ -57,6 +58,17 @@ public class InstitutionalPurchaseService extends ServiceImpl<InstitutionalPurch
                 Object o = objects.get(i);
                 JSONObject one = JSONUtil.parseObj(o);
                 InstitutionalPurchaseEntity institutionalPurchase = new InstitutionalPurchaseEntity();
+                //获取的买入时间
+
+                String dateGet = one.get("TRADE_DATE").toString().split(" ")[0];
+                // 拿到的时间阈值20
+                LocalDate d1 = LocalDate.parse(dateGet);
+                // 预定的时间阈值19
+                LocalDate d2 = LocalDate.parse(dateBe);
+                if (d1.isBefore(d2)){
+                    page=11;
+                    break;
+                }
 
                 institutionalPurchase.setActBuy(one.get("ACT_BUY").toString());
                 institutionalPurchase.setActSell(one.get("ACT_SELL").toString());
@@ -66,7 +78,7 @@ public class InstitutionalPurchaseService extends ServiceImpl<InstitutionalPurch
                 institutionalPurchase.setCompanyName(one.get("SECURITY_NAME_ABBR").toString());
                 institutionalPurchase.setInstitutionalCode(one.get("OPERATEDEPT_CODE").toString());
                 institutionalPurchase.setInstitutionalName(one.get("OPERATEDEPT_NAME").toString());
-                institutionalPurchase.setTradeDate(one.get("TRADE_DATE").toString());
+                institutionalPurchase.setTradeDate(dateGet);
                 institutionalPurchase.setD1CloseAdjchrate(one.get("D1_CLOSE_ADJCHRATE").toString());
                 institutionalPurchase.setD2CloseAdjchrate(one.get("D2_CLOSE_ADJCHRATE").toString());
                 institutionalPurchase.setD3CloseAdjchrate(one.get("D3_CLOSE_ADJCHRATE").toString());
@@ -80,7 +92,7 @@ public class InstitutionalPurchaseService extends ServiceImpl<InstitutionalPurch
                 return;
             }else {
                 page++;
-                saveEntity(page,size,code);
+                saveEntity(page,size,code,dateBe);
             }
         }catch (Exception e){
             log.info("保存失败，当前页码为{}",page);

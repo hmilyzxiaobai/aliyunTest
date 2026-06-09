@@ -55,6 +55,7 @@ public class CompanyCapitalAnalysisHistoryEntity {
 
     private String littleOrderProportion;
 
+    private String createTime;
 
 
 }

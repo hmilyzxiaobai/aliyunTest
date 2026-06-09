@@ -6,6 +6,7 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import example.dongfangcaifu.httpUtils.HttpRefererEnum;
 import example.dongfangcaifu.httpUtils.HttpUrlUtils;
 import example.dongfangcaifu.src.entity.Plate;
@@ -101,7 +102,6 @@ public class GetGaiNian {
         calendar.setTime(new Date());
         calendar.add(Calendar.MINUTE,-3);
         String format = DateUtil.format(calendar.getTime(), "yyyy-MM-dd");
-
         for (int index = 0;index<total;){
             index=page*size;
             digui(String.valueOf(page),
@@ -113,20 +113,18 @@ public class GetGaiNian {
         for(PlateHis plateHis:savePlateHisList){
             String changePercent = plateHis.getChangePercent();
             Float v = FloatUtils.stringToFloat(changePercent);
-            if(v>300){
+            if(v>3){
                 log.info("该板块出现增长异动，请及时关注，板块为：{}，板块代码为{}，板块涨幅为：{}，涨跌个数分别为{}，{}"
                         ,plateHis.getConceptName(),plateHis.getConceptCode(),FloatUtils.stringToFloat(plateHis.getChangePercent())/100+"%",plateHis.getUpAmount(),plateHis.getDownAmount());
             }
-
-
         }
         int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
         System.out.println("当前时间的小时数是: " + hourOfDay);
-        if (hourOfDay>9  ){
-            log.info("板块信息保存成功");
-            plateHisService.addBatch(savePlateHisList);
-            plateService.addBatch(savePlateList);
-        }
+
+        log.info("板块信息保存成功");
+        plateHisService.remove(Wrappers.<PlateHis>lambdaQuery().eq(PlateHis::getDf,format));
+        plateHisService.addBatch(savePlateHisList);
+        plateService.addBatch(savePlateList);
         // 保存
 
     }

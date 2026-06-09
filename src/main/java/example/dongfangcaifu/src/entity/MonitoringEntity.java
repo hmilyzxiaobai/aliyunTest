@@ -31,7 +31,7 @@ public class MonitoringEntity {
 
     private String type;
 
-
+    private String createTime;
 
 
 }

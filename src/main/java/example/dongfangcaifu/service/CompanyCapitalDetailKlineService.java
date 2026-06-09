@@ -42,6 +42,7 @@ public class CompanyCapitalDetailKlineService extends ServiceImpl<CompanyCapital
     public void saveDetailKines(int i){
         saveKline.clear();
         flag=true;
+        int indexFlag=i;
         List<CompanyInfoEntity> companyInfos = companyInfoService.getAll();
         Calendar calendar =  Calendar.getInstance();
         calendar.setTime(new Date());
@@ -59,7 +60,7 @@ public class CompanyCapitalDetailKlineService extends ServiceImpl<CompanyCapital
             CompanyInfoEntity info = companyInfos.get(i);
             digui(info.getCompanyCode(),format,info.getCompanyName(),changeEnums(info.getAppearMarket()));
         }
-        if(i==0){
+        if(indexFlag==0){
             this.remove(Wrappers.<CompanyCapitalDetailKlineEntity>lambdaQuery().eq(CompanyCapitalDetailKlineEntity::getDateHis,format));
         }
 

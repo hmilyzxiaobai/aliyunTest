@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("check")
 @Slf4j
@@ -49,83 +51,106 @@ public class CheckController {
     @GetMapping("check")
     public void check(@RequestParam(value = "format")String format){
         log.info("检查company当天的历史信息");
-        if (!companyHistoryNowDayService.list(Wrappers.<CompanyHistoryNowDayEntity>lambdaQuery().eq(CompanyHistoryNowDayEntity::getDateHis, format)).isEmpty()){
-            log.info("检查company当天的历史信息通过");
+        List<CompanyHistoryNowDayEntity> list = companyHistoryNowDayService.list(Wrappers.<CompanyHistoryNowDayEntity>lambdaQuery().eq(CompanyHistoryNowDayEntity::getDateHis, format).last(" order by date_his desc"));
+
+        if (!list.isEmpty()){
+            log.info("检查company当天的历史信息通过，时间为{}",list.get(0).getCreateTime());
         }else {
             log.info("检查不过1");
         }
+
         log.info("检查company的存档信息");
-        if (!companyHistoryService.list(Wrappers.<CompanyHistoryEntity>lambdaQuery().eq(CompanyHistoryEntity::getDateHis, format)).isEmpty()){
-            log.info("检查company当天的存档信息通过");
+        List<CompanyHistoryEntity> list1 = companyHistoryService.list(Wrappers.<CompanyHistoryEntity>lambdaQuery().eq(CompanyHistoryEntity::getDateHis, format).last(" order by date_his desc"));
+
+        if (!list1.isEmpty()){
+            log.info("检查company当天的存档信息通过,时间为{}",list1.get(0).getCreateTime());
         }else {
             log.info("检查不过2");
         }
+
+
         log.info("检查company的kLine图信息");
-        if (!companyCapitalDetailKlineService.list(Wrappers.<CompanyCapitalDetailKlineEntity>lambdaQuery().eq(CompanyCapitalDetailKlineEntity::getDateHis, format)).isEmpty()){
-            log.info("检查company当天的kLine图信息通过");
+        List<CompanyCapitalDetailKlineEntity> list2 = companyCapitalDetailKlineService.list(Wrappers.<CompanyCapitalDetailKlineEntity>lambdaQuery().eq(CompanyCapitalDetailKlineEntity::getDateHis, format).last(" order by date_his desc"));
+
+        if (!list2.isEmpty()){
+            log.info("检查company当天的kLine图信息通过,时间为{}",list2.get(0).getCreateTime());
         }else {
             log.info("检查不过3");
         }
 
         log.info("检查company的资金存档信息");
-        if (!capitalFlowHistoryService.list(Wrappers.<CapitalFlowHistoryEntity>lambdaQuery().eq(CapitalFlowHistoryEntity::getDateHis, format)).isEmpty()){
-            log.info("检查company当天的资金存档信息通过");
+        List<CapitalFlowHistoryEntity> list3 = capitalFlowHistoryService.list(Wrappers.<CapitalFlowHistoryEntity>lambdaQuery().eq(CapitalFlowHistoryEntity::getDateHis, format).last(" order by date_his desc"));
+        if (!list3.isEmpty()){
+            log.info("检查company当天的资金存档信息通过,时间为{}",list3.get(0).getCreateTime());
         }else {
             log.info("检查不过4");
         }
 
         log.info("检查company的暗盘资金存档信息");
-        if (!companyDarkCapitalService.list(Wrappers.<CompanyDarkCapitalEntity>lambdaQuery().eq(CompanyDarkCapitalEntity::getDateHis, format)).isEmpty()){
-            log.info("检查company当天的暗盘资金存档信息通过");
+        List<CompanyDarkCapitalEntity> list4 = companyDarkCapitalService.list(Wrappers.<CompanyDarkCapitalEntity>lambdaQuery().eq(CompanyDarkCapitalEntity::getDateHis, format).last(" order by date_his desc"));
+
+        if (!list4.isEmpty()){
+            log.info("检查company当天的暗盘资金存档信息通过,时间为{}",list4.get(0).getCreateTime());
         }else {
             log.info("检查不过5");
         }
 
         log.info("检查company的分析存档信息");
-        if (!companyCapitalAnalysisHistoryService.list(Wrappers.<CompanyCapitalAnalysisHistoryEntity>lambdaQuery().eq(CompanyCapitalAnalysisHistoryEntity::getDateHis, format)).isEmpty()){
-            log.info("检查company当天的分析存档信息通过");
+        List<CompanyCapitalAnalysisHistoryEntity> list5 = companyCapitalAnalysisHistoryService.list(Wrappers.<CompanyCapitalAnalysisHistoryEntity>lambdaQuery().eq(CompanyCapitalAnalysisHistoryEntity::getDateHis, format).last(" order by date_his desc"));
+
+        if (!list5.isEmpty()){
+            log.info("检查company当天的分析存档信息通过,时间为{}",list5.get(0).getCreateTime());
         }else {
             log.info("检查不过6");
         }
 
         log.info("检查板块资金流入信息");
-        if (!plateCapitalDetailService.list(Wrappers.<PlateCapitalDetailEntity>lambdaQuery().eq(PlateCapitalDetailEntity::getDateHis, format)).isEmpty()){
-            log.info("检查板块资金流入信息通过");
+        List<PlateCapitalDetailEntity> list6 = plateCapitalDetailService.list(Wrappers.<PlateCapitalDetailEntity>lambdaQuery().eq(PlateCapitalDetailEntity::getDateHis, format).last(" order by date_his desc"));
+
+        if (!list6.isEmpty()){
+            log.info("检查板块资金流入信息通过,时间为{}",list6.get(0).getCreateTime());
         }else {
             log.info("检查不过7");
         }
 
         log.info("检查板块资金流入KLine线图信息");
-        if (!plateCapitalDetailKlineService.list(Wrappers.<PlateCapitalDetailKlineEntity>lambdaQuery().eq(PlateCapitalDetailKlineEntity::getDateHis, format)).isEmpty()){
-            log.info("检查板块资金流入KLine线图信息通过");
+        List<PlateCapitalDetailKlineEntity> list7 = plateCapitalDetailKlineService.list(Wrappers.<PlateCapitalDetailKlineEntity>lambdaQuery().eq(PlateCapitalDetailKlineEntity::getDateHis, format).last(" order by date_his desc"));
+
+        if (!list7.isEmpty()){
+            log.info("检查板块资金流入KLine线图信息通过,时间为{}",list7.get(0).getCreateTime());
         }else {
             log.info("检查不过8");
         }
 
         log.info("检查板块历史信息");
-        if (!plateHisService.list(Wrappers.<PlateHis>lambdaQuery().eq(PlateHis::getDf, format)).isEmpty()){
-            log.info("检查板块历史涨幅表信息通过");
+        List<PlateHis> list8 = plateHisService.list(Wrappers.<PlateHis>lambdaQuery().eq(PlateHis::getDf, format).last(" order by df desc"));
+        if (!list8.isEmpty()){
+            log.info("检查板块历史涨幅表信息通过,时间为{}",list8.get(0).getCreateTime());
         }else {
             log.info("检查不过9");
         }
 
         log.info("检查板块资金暗盘历史信息");
-        if (!plateDarkCapitalService.list(Wrappers.<PlateDarkCapitalEntity>lambdaQuery().eq(PlateDarkCapitalEntity::getDateHis, format)).isEmpty()){
-            log.info("检查板块历史涨幅表信息通过");
+        List<PlateDarkCapitalEntity> list9 = plateDarkCapitalService.list(Wrappers.<PlateDarkCapitalEntity>lambdaQuery().eq(PlateDarkCapitalEntity::getDateHis, format).last(" order by date_his desc"));
+
+        if (!list9.isEmpty()){
+            log.info("检查板块资金暗盘历史信息,时间为{}",list9.get(0).getCreateTime());
         }else {
             log.info("检查不过10");
         }
 
         log.info("检查macd信息");
-        if (!macdInfoService.list(Wrappers.<MacdInfoEntity>lambdaQuery().eq(MacdInfoEntity::getDf, format)).isEmpty()){
-            log.info("检查macd信息通过");
+        List<MacdInfoEntity> list10 = macdInfoService.list(Wrappers.<MacdInfoEntity>lambdaQuery().eq(MacdInfoEntity::getDf, format).last(" order by df desc"));
+        if (!list10.isEmpty()){
+            log.info("检查macd信息通过,时间为{}",list10.get(0).getCreateTime());
         }else {
             log.info("检查不过11");
         }
 
         log.info("检查大涨大跌保存版本");
-        if (!monitoringService.list(Wrappers.<MonitoringEntity>lambdaQuery().eq(MonitoringEntity::getDateHis, format)).isEmpty()){
-            log.info("检查大涨大跌保存版本通过");
+        List<MonitoringEntity> list11 = monitoringService.list(Wrappers.<MonitoringEntity>lambdaQuery().eq(MonitoringEntity::getDateHis, format).last(" order by date_his desc"));
+        if (!list11.isEmpty()){
+            log.info("检查大涨大跌保存版本通过,时间为{}",list11.get(0).getCreateTime());
         }else {
             log.info("检查不过12");
         }

@@ -60,4 +60,6 @@ public class CompanyHistoryNowDayEntity implements Serializable {
     /**成交额*/
     private String volumeOfTransaction;
 
+    private String createTime;
+
 }

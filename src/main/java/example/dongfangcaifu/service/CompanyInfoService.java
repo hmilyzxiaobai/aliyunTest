@@ -58,17 +58,20 @@ public class CompanyInfoService extends ServiceImpl<CompanyInfoMapper, CompanyIn
     public String writePlates(){
         List<CompanyInfoEntity> list = this.list();
 
-        // 抓取板块
-
         Calendar calendar =  Calendar.getInstance();
         calendar.setTime(new Date());
         calendar.add(Calendar.MINUTE,-3);
         String df = DateUtil.format(calendar.getTime(), "yyyy-MM-dd");
 
-        for(CompanyInfoEntity info:list){
-            log.info("当前为"+info.getCompanyCode());
-            readUrl(info,changeEnums(info.getAppearMarket()),info.getCompanyCode(),df);
+        for(CompanyInfoEntity one:list){
+            String plateCode = one.getPlateCode();
+            log.info("当前代码{}，当前板块{}",one.getCompanyCode(),one.getPlateCode());
+            if (StringUtils.isBlank(plateCode)){
+                log.info("导入该板块信息{}",one.toString());
+                readUrl(one,changeEnums(one.getAppearMarket()),one.getCompanyCode(),df);
+            }
         }
+        // 抓取板块
         this.updateBatchById(list);
         //plateService.addBatch(Collections.singletonList((Plate) savePlateList));
         return "成功";

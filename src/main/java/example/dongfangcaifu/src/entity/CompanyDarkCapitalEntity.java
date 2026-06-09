@@ -42,4 +42,6 @@ public class CompanyDarkCapitalEntity {
      */
     private String brightAmount;
 
+    private String createTime;
+
 }

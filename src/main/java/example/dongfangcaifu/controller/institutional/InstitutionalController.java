@@ -31,15 +31,16 @@ public class InstitutionalController {
         int length = list.size();;
         for(int i = 0 ;i<length;i++){
             log.info("开始执行操作，总数为{}，当前为{}",length,i);
-            institutionalPurchaseService.saveInstitutional(page,size,list.get(i).getInstitutionalCode());
+            institutionalPurchaseService.saveInstitutional(page,size,list.get(i).getInstitutionalCode(),"");
         }
         return "结束";
     }
 
     @GetMapping("/save/info")
     public String saveInstitutionInfo(@RequestParam(value = "page") int page,
-                                  @RequestParam(value = "size")int size){
-        institutionalInfoService.saveInstitutionalInfo(page,size);
+                                      @RequestParam(value = "size")int size,
+                                      @RequestParam(value = "dateBe")String dateBe){
+        institutionalInfoService.saveInstitutionalInfo(page,size,dateBe);
         return "结束";
     }
 }

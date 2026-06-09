@@ -68,21 +68,7 @@ public class WriteInfoController {
     private void send(){
         getAllInfo.saveComInfo(1);
     }
-    /**
-     * 每天入库当天历史数据
-     */
-    @GetMapping("one/day/save")
-    private void saveOne(){
 
-    }
-
-    /**
-     * 查询持仓是否需要卖出
-     */
-    @GetMapping("cell")
-    private void cell(){
-
-    }
 
     @Autowired
     private GetNowAndSend getNowAndSend;
@@ -106,18 +92,6 @@ public class WriteInfoController {
 
 
 
-    @GetMapping("surveillance/stock/low")
-    public void surveillanceLow(){
-        log.info("监控低点");
-
-    //    getNowAndSend.saveComInfo();
-    }
-
-    @GetMapping("surveillance/stock/high")
-    public void surveillanceHigh(){
-        log.info("监控高点");
-    //    getNowAndSend.saveComInfo();
-    }
 
     @GetMapping("gou/list")
     public String gou(){
@@ -322,13 +296,17 @@ public class WriteInfoController {
     private CompanyCapitalDetailKlineService companyCapitalDetailKlineService;
     @GetMapping("get/code/kline")
     public String getCodeKline(@RequestParam Integer index){
+
         companyCapitalDetailKlineService.saveDetailKines(index);
         return "获取个股资金k线图信息完成";
     }
 
 
-
-
+    @GetMapping("company/info/reflush")
+    public String reflush(){
+        companyHistoryService.rebuildCompanyInfo();
+        return "结束";
+    }
     @GetMapping("export/low")
     public String exportLow(){
         companyOtherService.exportAllData();

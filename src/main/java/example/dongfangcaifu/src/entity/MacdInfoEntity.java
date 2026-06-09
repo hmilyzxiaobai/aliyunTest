@@ -71,4 +71,6 @@ public class MacdInfoEntity implements Serializable {
 
     @TableField(exist = false)
     private String trend;   // 趋势判断：上涨/下跌/震荡
+
+    private String createTime;
 }

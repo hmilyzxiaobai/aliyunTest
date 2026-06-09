@@ -35,7 +35,7 @@ public class CompanyCapitalAnalysisHistoryService extends ServiceImpl<CompanyCap
 
     static List<CompanyCapitalAnalysisHistoryEntity> saveList = new ArrayList<>();
 
-    public synchronized void saveCompanyCapitalAnalysisHistory() {
+    public synchronized void saveCompanyCapitalAnalysisHistory(int page) {
 
         saveList.clear();
 
@@ -74,11 +74,11 @@ public class CompanyCapitalAnalysisHistoryService extends ServiceImpl<CompanyCap
         }
 
         // 保存数据
-        insertEntityData(total);
+        insertEntityData(total,page);
     }
 
-    private void insertEntityData(int total){
-        int page=1;
+    private void insertEntityData(int total,int page){
+       // int page=1;
         int size = 50;
 
         Calendar calendar =  Calendar.getInstance();

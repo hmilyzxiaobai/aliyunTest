@@ -31,8 +31,14 @@ public class HttpUrlUtils {
             connection.setRequestProperty("Accept", "*/*");
             connection.setRequestProperty("Cache-Control", "no-cache");
             connection.setRequestProperty("Connection", "keep-alive");
+            // ie
             connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
-           // connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36");
+            // 火狐
+//            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/116.0");
+            // chrome
+//             connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36");
+
+
             connection.setRequestProperty("Origin", "https://quote.eastmoney.com");
 
             // 此处需要策略 不同的地方的referer不同 暂时不用试试 如果不行就改

@@ -86,9 +86,9 @@ public class MonitoringController {
     }
 
     @GetMapping("save")
-    private String saveData(){
+    private String saveData(@RequestParam(value = "page")int page){
         log.info("进入循环");
-        companyCapitalAnalysisHistoryService.saveCompanyCapitalAnalysisHistory();
+        companyCapitalAnalysisHistoryService.saveCompanyCapitalAnalysisHistory(page);
         return "成功";
     }
 

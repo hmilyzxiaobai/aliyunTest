@@ -3,6 +3,7 @@ package example.dongfangcaifu.service.dark;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import example.dongfangcaifu.mapper.CompanyCapitalDetailKlineMapper;
 import example.dongfangcaifu.mapper.PlateDarkCapitalMapper;
@@ -75,6 +76,7 @@ public class PlateDarkCapitalService extends ServiceImpl<PlateDarkCapitalMapper,
                     String.valueOf(size),code,df,type);
             page++;
             if (!conFlag){
+                log.info("保存进度为{}",index);
                 break;
             }
         }

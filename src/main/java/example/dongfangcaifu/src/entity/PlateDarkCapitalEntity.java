@@ -49,4 +49,6 @@ public class PlateDarkCapitalEntity {
 
     private String upAmount;
     private String downAmount;
+
+    private String createTime;
 }

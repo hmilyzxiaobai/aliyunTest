@@ -45,4 +45,5 @@ public class CompanyCapitalDetailKlineEntity {
     /**当天小单净流入及占比*/
     private String littleOrderAmount;
 
+    private String createTime;
 }

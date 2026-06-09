@@ -40,10 +40,11 @@ public class DarkController {
     public void plateDark(@RequestParam(value = "page") int page,
                               @RequestParam(value = "size")int size,
                               @RequestParam(value = "code")String code,
-                            @RequestParam(value = "df")String df){
+                            @RequestParam(value = "df")String df,
+                          @RequestParam(value = "dfRemove")String dfRemove){
         String[] split = df.split(",");
        // log.info("保存暗盘资金结束，保存数据为：{}",savesCodeDfList.size());
-        plateDarkCapitalService.remove(Wrappers.<PlateDarkCapitalEntity>lambdaQuery().eq(PlateDarkCapitalEntity::getDateHis,df));
+        plateDarkCapitalService.remove(Wrappers.<PlateDarkCapitalEntity>lambdaQuery().eq(PlateDarkCapitalEntity::getDateHis,dfRemove));
 
         for(int i=0;i<split.length;i++){
             log.info("开始保存日期为：{}",split[i]);

@@ -36,7 +36,7 @@ public class PlateHis {
     private String upAmount;
     private String downAmount;
     private String df;
-
+    private String createTime;
     /*
 
 CREATE TABLE `plate` (
